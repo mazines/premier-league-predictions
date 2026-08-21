@@ -23,11 +23,20 @@ Create the KV namespace and copy the printed id into `wrangler.toml`, replacing
 wrangler kv namespace create PREDICTIONS
 ```
 
-Set the admin secret. Use something long and random — it guards the export and reset
-endpoints:
+Set the admin secret. It guards the export and reset endpoints, so make it long and
+random:
 
 ```sh
 wrangler secret put ADMIN_KEY
+```
+
+**Keep it URL-safe** — letters and digits only. It travels as `?key=…` in a query string,
+where `+` decodes to a space, so a plain base64 secret silently stops matching and
+`/export` answers a bland `404` instead of an error. `openssl rand -hex 24` gives you
+something safe:
+
+```sh
+openssl rand -hex 24
 ```
 
 Set the group code. This is the shared code the form asks for, and it is what stops a
@@ -45,6 +54,9 @@ gitignored:
 JOIN_CODE = "whatever-you-chose"
 ADMIN_KEY = "whatever-you-chose"
 ```
+
+`wrangler dev` only listens on `127.0.0.1`, so a memorable `ADMIN_KEY` there is harmless.
+Production is the one that needs a generated value.
 
 If `JOIN_CODE` is unset the gate is skipped and anybody can submit. That keeps a fresh
 deployment usable, but it means forgetting to set it leaves the form open.

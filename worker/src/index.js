@@ -209,9 +209,9 @@ function adminOk(url, env) {
   return !!env.ADMIN_KEY && key === env.ADMIN_KEY;
 }
 
-async function rateLimited(request, env) {
+async function rateLimited(request, env, bucket) {
   const ip = request.headers.get('CF-Connecting-IP') || 'unknown';
-  const key = 'rate:' + ip;
+  const key = 'rate:' + (bucket || 'submit') + ':' + ip;
   const current = Number((await env.PREDICTIONS.get(key)) || 0);
   if (current >= RATE_MAX) return true;
   // expirationTtl restarts on each write, which makes this a sliding window.
@@ -473,13 +473,23 @@ async function handlePicks(url, env) {
   });
 }
 
-async function handleExport(url, env) {
+// Both admin endpoints take the key in a query string, so without a limit somebody
+// could sit and guess at it. /export returns every entry including all the email
+// addresses, so it is the one endpoint where a guessable key would actually cost
+// something. A separate bucket from /submit, so admin guessing cannot lock the form.
+async function handleExport(request, url, env) {
+  if (await rateLimited(request, env, 'admin')) {
+    return json({ ok: false, error: 'Too many requests.' }, 429);
+  }
   if (!adminOk(url, env)) return json({ ok: false, error: 'Not found.' }, 404);
   const all = await collectAll(env);
   return json({ ok: true, season: SEASON, export: all });
 }
 
-async function handleReset(url, env) {
+async function handleReset(request, url, env) {
+  if (await rateLimited(request, env, 'admin')) {
+    return json({ ok: false, error: 'Too many requests.' }, 429);
+  }
   if (!adminOk(url, env)) return json({ ok: false, error: 'Not found.' }, 404);
   const email = normEmail(url.searchParams.get('email'));
   if (!isEmail(email)) return json({ ok: false, error: 'Valid email required.' }, 400);
@@ -512,8 +522,8 @@ export default {
       if (path === '/submit' && request.method === 'POST') return handleSubmit(request, env);
       if (path === '/mine' && request.method === 'GET') return handleMine(url, env);
       if (path === '/picks' && request.method === 'GET') return handlePicks(url, env);
-      if (path === '/export' && request.method === 'GET') return handleExport(url, env);
-      if (path === '/admin/reset' && request.method === 'POST') return handleReset(url, env);
+      if (path === '/export' && request.method === 'GET') return handleExport(request, url, env);
+      if (path === '/admin/reset' && request.method === 'POST') return handleReset(request, url, env);
 
       return json({ ok: false, error: 'Not found.' }, 404);
     } catch (err) {
