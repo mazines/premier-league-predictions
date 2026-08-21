@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>2026/2027 Predictions — Premier League</title>
+    <link rel="stylesheet" href="../assets/styles.css" />
+  </head>
+  <body>
+    <header class="title-block">
+      <img class="pl-logo" src="https://upload.wikimedia.org/wikipedia/en/f/f2/Premier_League_Logo.svg" alt="Premier League" onerror="this.remove()" />
+      <div class="title-text">
+        <h1>2026/2027 Predictions</h1>
+        <a class="scoring-link" href="../scoring.html">View scoring system →</a>
+        <a class="scoring-link" href="../index.html" style="margin-left:8px">All seasons →</a>
+        <a class="scoring-link" href="../predict.html" style="margin-left:8px">Submit yours →</a>
+      </div>
+    </header>
+
+    <p class="reveal-notice" id="reveal-notice" hidden></p>
+
+    <!-- Unlike the older season pages, this table is not hand-written. data-render="auto"
+         tells assets/scoreboard.js to build the header and body from SEASON_CONFIG, which
+         is why thead and tbody are empty here.
+
+         The picks are not in this file either. assets/season-fetch.js asks the Worker for
+         them at view time, and before the reveal date the Worker only hands back the
+         visitor's own entry. So there is nothing here for anyone to read early. -->
+    <div class="table-wrap"><div class="scroll">
+      <table class="predictions" data-render="auto">
+        <thead></thead>
+        <tbody></tbody>
+      </table>
+    </div></div>
+
+    <section class="commentary" data-render="auto">
+      <h2>Hot takes</h2>
+      <div class="cards"></div>
+    </section>
+
+    <section class="leaderboard">
+      <div class="lb-head">
+        <h2>Leaderboard</h2>
+        <p class="lb-status">Season in progress · max possible <strong>35 pt</strong> · <a href="../scoring.html">how scoring works →</a></p>
+      </div>
+      <table class="lb-table">
+        <thead><tr><th>Rank</th><th>Name</th><th style="text-align:right">Points</th></tr></thead>
+        <tbody id="leaderboard-body"></tbody>
+      </table>
+    </section>
+
+    <script>
+      window.SEASON_CONFIG = {
+        topN: 7,
+        hasReleg: true,
+        hasMegaBonus: true,
+        awards: [
+          { key:'poty',  label:'PFA POTY',              max:2 },
+          { key:'ypoty', label:'PFA YPOTY',             max:2, note:'(U23)' },
+          { key:'gb',    label:'Golden Boot',           max:1 },
+          { key:'play',  label:'Playmaker',             max:1 },
+          { key:'gg',    label:'Golden Glove',          max:1 },
+          { key:'mgr',   label:'MOTY',                  max:1 },
+          { key:'sots',  label:'Signing of the Season', max:1 },
+        ],
+
+        // Fill these in once the season finishes. Leaving them out keeps the Actual
+        // column showing a dash and the leaderboard showing no ranks.
+        actualResults: {},
+
+        // Left empty on purpose. assets/season-fetch.js fills both from the Worker at
+        // view time — before the reveal date it only ever gets the visitor's own entry.
+        // Nothing about anybody else's picks lives in this file.
+        predictions: {},
+        hot: {},
+      };
+    </script>
+    <script src="../assets/config.js"></script>
+    <script src="../assets/teams.js"></script>
+    <!-- Loads scoreboard.js itself, once the fetch settles. -->
+    <script src="../assets/season-fetch.js"></script>
+  </body>
+</html>

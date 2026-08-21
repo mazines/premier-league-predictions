@@ -8,11 +8,185 @@
 //   hasMegaBonus: true,              // +2pt for perfect ordered top N
 //   awards: [
 //     { key: 'poty',  label: 'PFA POTY',     max: 2 },
-//     ...
+//     ...                            // optional `note` renders a muted qualifier
 //   ],
 //   actualResults: { topN: ['ARS',...], releg: [...], poty: '...', ... },
 //   predictions:  { Friend1: { topN: [...], releg: [...], poty: '...', ... }, ... }
+//   hot:          { Friend1: { disappointment: '...', surprise: '...', hotTake: '...' } }
 // }
+
+// Predictions table renderer — a page opts in, nothing is imposed.
+//
+// The five older season pages hand-write their table and carry no data-render
+// attribute, so this skips them entirely and they behave exactly as before. A page
+// that sets <table class="predictions" data-render="auto"> with an empty thead and
+// tbody gets both built from SEASON_CONFIG, which removes the per-participant <td>
+// duplication, the colspan that had to be kept in step by hand, and every copied
+// crest URL.
+//
+// The category labels emitted here are deliberately identical to the hand-written
+// ones. The tick-marking pass further down finds rows by reading that text, so those
+// strings are a contract, not a cosmetic choice.
+(function () {
+  const cfg = window.SEASON_CONFIG;
+  if (!cfg) return;
+
+  const table = document.querySelector('table.predictions[data-render="auto"]');
+  if (!table) return;
+  if (!window.teamPill) return; // needs assets/teams.js loaded first
+
+  const topN = cfg.topN || 6;
+  const awards = cfg.awards || [];
+  const actual = cfg.actualResults || {};
+  const predictions = cfg.predictions || {};
+
+  const names = Object.keys(predictions).sort((a, b) => a.localeCompare(b));
+  const span = names.length + 2; // category column + actual column
+  const ordinals = ['1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th', '9th', '10th'];
+
+  // Award picks and display names now originate from a public form, so nothing
+  // from the config is trusted into markup unescaped.
+  function esc(s) {
+    return String(s)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  const NOPICK = '<span class="nopick">no pick</span>';
+  const PENDING = '<span class="nopick">—</span>'; // season not finished yet
+
+  function pill(code, sm) {
+    return code ? window.teamPill(code, { sm: !!sm }) : NOPICK;
+  }
+
+  function player(v) {
+    if (v == null || v === '') return NOPICK;
+    return '<span class="player">' + esc(v) + '</span>';
+  }
+
+  function relegStack(list) {
+    if (!list || !list.length) return NOPICK;
+    return (
+      '<div class="relegation-stack">' + list.map((c) => pill(c, true)).join('') + '</div>'
+    );
+  }
+
+  function breakRow(label) {
+    return (
+      '<tr class="section-break"><td class="cat-col" colspan="' +
+      span +
+      '">' +
+      esc(label) +
+      '</td></tr>'
+    );
+  }
+
+  let head =
+    '<tr><th class="cat-col">Name</th><th class="actual-col">Actual</th>' +
+    names.map((n) => '<th class="friend">' + esc(n) + '</th>').join('') +
+    '</tr>';
+
+  let body = breakRow('Final Table — Top ' + topN);
+
+  for (let i = 0; i < topN; i++) {
+    body +=
+      '<tr><td class="cat-col">' +
+      (ordinals[i] || i + 1 + 'th') +
+      '</td><td class="actual-col">' +
+      (actual.topN && actual.topN[i] ? pill(actual.topN[i]) : PENDING) +
+      '</td>' +
+      names
+        .map((n) => {
+          const picks = predictions[n].topN;
+          return '<td>' + (picks && picks[i] ? pill(picks[i]) : NOPICK) + '</td>';
+        })
+        .join('') +
+      '</tr>';
+  }
+
+  if (cfg.hasReleg) {
+    body +=
+      breakRow('Bottom Three — Relegated') +
+      '<tr><td class="cat-col">Relegation</td><td class="actual-col">' +
+      (actual.releg ? relegStack(actual.releg) : PENDING) +
+      '</td>' +
+      names.map((n) => '<td>' + relegStack(predictions[n].releg) + '</td>').join('') +
+      '</tr>';
+  }
+
+  if (awards.length) {
+    body += breakRow('Individual Awards');
+    awards.forEach((a) => {
+      // Matches the hand-written "PFA YPOTY (U23)" treatment.
+      const note = a.note
+        ? ' <span style="color:var(--muted);font-weight:400">' + esc(a.note) + '</span>'
+        : '';
+      body +=
+        '<tr class="award"><td class="cat-col">' +
+        esc(a.label) +
+        note +
+        '</td><td class="actual-col">' +
+        (actual[a.key] ? player(actual[a.key]) : PENDING) +
+        '</td>' +
+        names.map((n) => '<td>' + player(predictions[n][a.key]) + '</td>').join('') +
+        '</tr>';
+    });
+  }
+
+  const thead = table.querySelector('thead');
+  const tbody = table.querySelector('tbody');
+  if (thead) thead.innerHTML = head;
+  if (tbody) tbody.innerHTML = body;
+})();
+
+// Hot takes renderer — same opt-in idea, for
+// <section class="commentary" data-render="auto">. Reads SEASON_CONFIG.hot so the
+// cards no longer have to be typed out by hand.
+(function () {
+  const cfg = window.SEASON_CONFIG;
+  if (!cfg || !cfg.hot) return;
+
+  const cards = document.querySelector('section.commentary[data-render="auto"] .cards');
+  if (!cards) return;
+
+  function esc(s) {
+    return String(s)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  function quote(variant, label, text) {
+    if (!text) return '';
+    return (
+      '<div class="quote ' +
+      variant +
+      '"><span class="label">' +
+      label +
+      '</span>' +
+      esc(text) +
+      '</div>'
+    );
+  }
+
+  const names = Object.keys(cfg.hot).sort((a, b) => a.localeCompare(b));
+
+  cards.innerHTML = names
+    .map((name) => {
+      const h = cfg.hot[name] || {};
+      const quotes =
+        quote('disappointment', 'Disappointment', h.disappointment) +
+        quote('surprise', 'Surprise', h.surprise) +
+        quote('hottake', 'Hot take', h.hotTake);
+      // Somebody who skipped all three gets no card, rather than an empty one.
+      if (!quotes) return '';
+      return '<div class="card"><h3>' + esc(name) + '</h3>' + quotes + '</div>';
+    })
+    .join('');
+})();
 
 (function () {
   const cfg = window.SEASON_CONFIG;
@@ -26,6 +200,16 @@
     actualResults = {},
     predictions = {},
   } = cfg;
+
+  // Names and award picks reach this config from a public form, so anything that
+  // originated there is escaped before it goes into markup.
+  function esc(s) {
+    return String(s)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
 
   function score(picks, actual) {
     if (!actual.topN) return null;
@@ -117,7 +301,7 @@
         const display =
           pickVal == null
             ? '<em style="color:var(--muted)">no pick</em>'
-            : `<strong>${pickVal}</strong>`;
+            : `<strong>${esc(pickVal)}</strong>`;
         sections['Awards'].push({
           label: `${a.label}: ${display}`,
           pts: hit ? a.max : 0,
@@ -175,7 +359,7 @@
       const breakdownRow = haveResults
         ? `<tr class="lb-breakdown" data-idx="${idx}" hidden><td colspan="3">${buildBreakdown(predictions[r.name], actualResults)}</td></tr>`
         : '';
-      return `<tr class="lb-row${podium}" data-idx="${idx}"><td class="rank">${rankCell}</td><td class="name">${r.name}</td><td class="score">${pts}</td></tr>${breakdownRow}`;
+      return `<tr class="lb-row${podium}" data-idx="${idx}"><td class="rank">${rankCell}</td><td class="name">${esc(r.name)}</td><td class="score">${pts}</td></tr>${breakdownRow}`;
     })
     .join('');
 
@@ -198,6 +382,7 @@
       Playmaker: { key: 'play', kind: 'player' },
       'Golden Glove': { key: 'gg', kind: 'player' },
       MOTY: { key: 'mgr', kind: 'player' },
+      'Signing of the Season': { key: 'sots', kind: 'player' },
     };
 
     function getPlayerText(playerEl) {

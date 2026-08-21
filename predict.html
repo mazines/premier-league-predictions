@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Submit Your Predictions — 2026/2027 Premier League</title>
+    <link rel="stylesheet" href="assets/styles.css" />
+    <!-- Form-only styles. Kept separate so the season pages do not carry them. -->
+    <link rel="stylesheet" href="assets/predict.css" />
+  </head>
+  <body>
+    <header class="title-block">
+      <img class="pl-logo" src="https://upload.wikimedia.org/wikipedia/en/f/f2/Premier_League_Logo.svg" alt="Premier League" onerror="this.remove()" />
+      <div class="title-text">
+        <p class="kicker">2026/27 Season</p>
+        <h1>Submit Your Predictions</h1>
+        <a class="scoring-link" href="scoring.html">View scoring system →</a>
+        <a class="scoring-link" href="index.html" style="margin-left:8px">All seasons →</a>
+        <div id="status-chip" class="status-chip" hidden></div>
+      </div>
+    </header>
+
+    <noscript>
+      <div class="closed-panel">
+        <h2>JavaScript required</h2>
+        <p>This form needs JavaScript to run. Please enable it, or send your picks to the group chat instead.</p>
+      </div>
+    </noscript>
+
+    <form class="predict-form" id="predict-form" hidden novalidate>
+      <div id="questions"></div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary" id="submit-btn">Submit predictions</button>
+        <p class="form-note" id="form-note">Your answers save as you type, so you can finish later.</p>
+      </div>
+
+      <div class="form-result" id="form-result" hidden></div>
+    </form>
+
+    <div class="closed-panel" id="closed-panel" hidden></div>
+
+    <script src="assets/config.js"></script>
+    <script src="assets/teams.js"></script>
+    <script src="assets/predict.js"></script>
+  </body>
+</html>
