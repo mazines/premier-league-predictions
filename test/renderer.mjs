@@ -167,10 +167,37 @@ const handArs =
   '<span class="pill t-ARS" title="Arsenal"><img class="crest" src="https://a.espncdn.com/i/teamlogos/soccer/500/359.png" alt="" onerror="this.remove()" />ARS</span>';
 t('Arsenal pill is byte-identical to pages/2025-2026.html', r.tbody.includes(handArs) && read('pages/2025-2026.html').includes(handArs));
 t('relegation uses .relegation-stack', r.tbody.includes('relegation-stack'));
-t(
-  'a club with no crest id still renders',
-  r.tbody.includes('<span class="pill sm t-COV" title="Coventry City">COV</span>')
-);
+
+// Every club has a verified ESPN id now, so nothing in the current roster exercises the
+// crestless path. Test it directly rather than pinning it to whichever club happens to
+// be missing one — a future season will add a club before its id is known.
+console.log('\ncrests:');
+{
+  const win = {};
+  new Function('window', teamsSrc)(win);
+
+  t(
+    'every club in the roster has a crest id',
+    win.PL_TEAMS.every((x) => !!x.espnId),
+    win.PL_TEAMS.filter((x) => !x.espnId).map((x) => x.code)
+  );
+  t(
+    'no two clubs share an id',
+    new Set(win.PL_TEAMS.map((x) => x.espnId)).size === win.PL_TEAMS.length
+  );
+  t('a club with an id renders its crest', win.teamPill('ARS').includes('/500/359.png'));
+
+  // A club added before its id is known must degrade to a plain chip, never borrow
+  // another club's badge.
+  win.TEAMS_BY_CODE.ZZZ = { code: 'ZZZ', name: 'New Club', espnId: null };
+  t(
+    'a club with no id renders a plain chip',
+    win.teamPill('ZZZ') === '<span class="pill t-ZZZ" title="New Club">ZZZ</span>',
+    win.teamPill('ZZZ')
+  );
+  t('and emits no img tag at all', win.crestImg('ZZZ') === '');
+  t('an unknown code renders nothing', win.teamPill('QQQ') === '');
+}
 
 console.log('\nnull and pending handling:');
 t('a null award shows "no pick"', r.tbody.includes('<span class="nopick">no pick</span>'));

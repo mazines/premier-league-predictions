@@ -71,8 +71,8 @@ Relegation with **zero** picks should submit fine. It is optional.
 - Every question should show its image. In devtools, block
   `assets/img/2026-2027/poty.jpg` and reload — the question should fall back to a gold card
   reading "2025/26 winner · Bruno Fernandes" rather than showing a broken image.
-- Coventry and Hull chips render as plain coloured chips, with no crest. That is expected
-  until their ESPN ids are filled in.
+- Every club should show a badge. All twenty ids are verified against ESPN, so a missing
+  or wrong one means an id has drifted.
 
 **Mobile** — narrow the window to about 375px. Chips stay tappable, nothing overflows
 sideways, and the submit button goes full width.
@@ -238,7 +238,7 @@ Pages picks it up from `main`.
 |---|---|
 | Form area is blank | A JS error. Open the console. `teams.js` must load before `predict.js` |
 | Drafts never save | You opened the page over `file://`, or you are in private browsing |
-| Chips have no crests | Expected for Coventry and Hull. For anything else, check `espnId` in `teams.js` |
+| A chip has no crest, or the wrong badge | Check `espnId` in `teams.js` against `test/crest-finder.html` |
 | Table on a season page is empty | `predictions` is still `{}`, or `teams.js` is not loaded before `scoreboard.js` |
 | Green ticks missing | A category label drifted, or the award is absent from `categoryMap`. Run `node test/renderer.mjs` |
 | Submit says "no submission endpoint" | `apiBase` in `assets/config.js` is empty. Expected until you set it |

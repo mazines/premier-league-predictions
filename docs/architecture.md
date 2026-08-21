@@ -241,9 +241,10 @@ winner. A missing image never leaves a question without context.
 The relegation question has no photo at all. Its hero is built from `teams.js`: who went down
 last season, and who came up.
 
-Clubs with no crest id yet — Coventry and Hull — render as plain coloured chips. Guessing an
-ESPN id would be worse than having none, because a wrong-but-valid id shows **another club's
-badge**.
+All twenty ids are verified against ESPN's own team list. A club added before its id is known
+renders as a plain coloured chip, which is deliberate: guessing an id would be worse than
+having none, because a wrong-but-valid one shows **another club's badge**. That is exactly how
+the old pages came to show Blackburn's crest on Everton and Everton's on Fulham for years.
 
 ## Scoring
 

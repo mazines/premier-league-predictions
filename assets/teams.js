@@ -16,18 +16,11 @@
     { code: 'BRE', name: 'Brentford',               espnId: 337,  promoted: false },
     { code: 'BHA', name: 'Brighton and Hove Albion', espnId: 331, promoted: false },
     { code: 'CHE', name: 'Chelsea',                 espnId: 363,  promoted: false },
-    // TODO: fill in the ESPN crest id for Coventry. Open
-    // https://a.espncdn.com/i/teamlogos/soccer/500/<id>.png until the badge matches.
-    { code: 'COV', name: 'Coventry City',           espnId: null, promoted: true },
+    { code: 'COV', name: 'Coventry City',           espnId: 388,  promoted: true },
     { code: 'CRY', name: 'Crystal Palace',          espnId: 384,  promoted: false },
     { code: 'EVE', name: 'Everton',                 espnId: 368,  promoted: false },
-    // TODO: Fulham's crest id is unknown. It is NOT 368 — that one is Everton, and the
-    // older season pages showed Everton's badge on Fulham's pill for years because of
-    // it. null is the right answer until somebody looks it up: a plain coloured chip is
-    // honest, another club's badge is not. test/crest-finder.html will find it.
-    { code: 'FUL', name: 'Fulham',                  espnId: null, promoted: false },
-    // TODO: fill in the ESPN crest id for Hull, same method as Coventry above.
-    { code: 'HUL', name: 'Hull City',               espnId: null, promoted: true },
+    { code: 'FUL', name: 'Fulham',                  espnId: 370,  promoted: false },
+    { code: 'HUL', name: 'Hull City',               espnId: 306,  promoted: true },
     { code: 'IPS', name: 'Ipswich Town',            espnId: 373,  promoted: true },
     { code: 'LEE', name: 'Leeds United',            espnId: 357,  promoted: false },
     { code: 'LIV', name: 'Liverpool',               espnId: 364,  promoted: false },
