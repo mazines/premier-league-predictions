@@ -107,6 +107,23 @@ The last case is deliberately not an error. A locked page is a normal state.
 
 Emails and edit tokens are never included in a `/picks` response, whichever branch runs.
 
+### Encode the email when you call these by hand
+
+Anything passing an address in a query string has to URL-encode it. A `+` decodes to a
+space, so a plus-addressed email arrives mangled, fails the address check, and the call
+quietly does nothing:
+
+```sh
+# wrong — arrives as "you test@example.com"
+curl ".../admin/reset?key=$K&email=you+test@example.com"
+
+# right
+curl ".../admin/reset?key=$K&email=you%2Btest@example.com"
+```
+
+This only bites hand-written commands. The browser is fine: both `assets/predict.js` and
+`assets/season-fetch.js` put the address through `encodeURIComponent` first.
+
 `REVEAL_ISO` sits at the top of `src/index.js`, set to Sunday 30 May 2027, 18:00 BST. That
 is the final day of the season, two hours after the ten simultaneous 16:00 kickoffs, so the
 last whistle has gone before anybody sees anybody else's picks.

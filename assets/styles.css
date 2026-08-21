@@ -624,4 +624,6 @@ table.rubric tr.total td.pts { color: var(--accent); }
 
   table.predictions .player { font-size: 11px; }
   table.predictions .player .qualifier { font-size: 9px; }
+
+  .reveal-notice { padding: 12px 14px; font-size: 12px; }
 }

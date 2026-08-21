@@ -12,10 +12,13 @@
 }
 
 
-/* Deadline chip — same recipe as the unused .season-card .winner pill */
+/* Deadline chip — same recipe as the unused .season-card .winner pill.
+   Wraps on purpose: "Closes 1 Sep 2026, 23:00 · 11 days left" is long enough to
+   overflow a phone-width header otherwise. */
 .status-chip {
   display: inline-flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 8px;
   margin-top: 12px;
   padding: 5px 12px;
@@ -377,7 +380,7 @@ textarea.field-input { min-height: 88px; resize: vertical; }
   .club-chip { font-size: 11px; padding: 8px; gap: 6px; }
   .club-chip .crest { width: 18px; height: 18px; }
   .slot .slot-num { width: 30px; font-size: 10px; }
-  .slot .slot-zone { font-size: 8px; letter-spacing: 0.06em; }
+  .slot .slot-zone { font-size: 9px; letter-spacing: 0.06em; }
   .btn.btn-primary { width: 100%; justify-content: center; }
   .closed-panel { padding: 24px 18px; }
 }
