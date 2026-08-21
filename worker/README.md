@@ -30,6 +30,25 @@ endpoints:
 wrangler secret put ADMIN_KEY
 ```
 
+Set the group code. This is the shared code the form asks for, and it is what stops a
+stranger who finds the URL from submitting. Make it short enough to say out loud, because
+you will be sending it to ten people:
+
+```sh
+wrangler secret put JOIN_CODE
+```
+
+To use the same code when running locally, put it in `worker/.dev.vars`, which is
+gitignored:
+
+```
+JOIN_CODE = "whatever-you-chose"
+ADMIN_KEY = "whatever-you-chose"
+```
+
+If `JOIN_CODE` is unset the gate is skipped and anybody can submit. That keeps a fresh
+deployment usable, but it means forgetting to set it leaves the form open.
+
 Deploy:
 
 ```sh
@@ -45,11 +64,23 @@ only client-side change needed.
 | Method | Path | Auth | Purpose |
 |---|---|---|---|
 | GET | `/status` | none | Deadline, server time, open or closed, reveal date |
-| POST | `/submit` | edit token when updating | Validate and store an entry |
+| POST | `/submit` | `JOIN_CODE`, plus the edit token when updating | Validate and store an entry |
 | GET | `/mine?email=&token=` | edit token | Read one entry back |
 | GET | `/picks?email=&token=&key=` | see below | Feeds the season page |
 | GET | `/export?key=` | `ADMIN_KEY` | Every entry, shaped for `SEASON_CONFIG` |
 | POST | `/admin/reset?key=&email=` | `ADMIN_KEY` | Delete one entry |
+
+## Why the group code is checked here
+
+The site is on GitHub Pages, which serves everything publicly and cannot gate anything. A
+password prompt in the page would be worthless: the value would sit in the source for
+anyone to read, and the JavaScript could simply be skipped.
+
+So the code is checked in the Worker instead, before anything is stored, and a wrong one
+gets a `403` with `badCode: true`. The form page stays public to look at — which costs
+nothing, because the picks are not in it — but nobody outside the group can add an entry.
+
+The code is stripped from the body before validation and is never written to storage.
 
 ## Who can see whose picks
 

@@ -7,12 +7,16 @@
 //
 // Endpoints
 //   GET  /status                     deadline, server time, open/closed, reveal date
-//   POST /submit                     validate + upsert, keyed on lowercased email
+//   POST /submit                     group code + validate + upsert, keyed on email
 //   GET  /mine?email=&token=         read back one entry, token required
 //   GET  /picks?email=&token=&key=   feeds the season page. Before the reveal date it
 //                                    returns only the caller's own entry
 //   GET  /export?key=                admin: SEASON_CONFIG.predictions, ready to paste
 //   POST /admin/reset?key=&email=    admin: drop one entry so somebody can resubmit
+//
+// Secrets, both set with `wrangler secret put` and never in this file:
+//   ADMIN_KEY   guards /export and /admin/reset
+//   JOIN_CODE   the shared code the group needs in order to submit at all
 //
 // Storage: one KV namespace bound as PREDICTIONS.
 //   pred:<email>   the entry, JSON
@@ -254,6 +258,26 @@ async function handleSubmit(request, env) {
   // and the error makes no sense to whoever sent a malformed one.
   const token = typeof body.token === 'string' ? body.token : null;
   delete body.token;
+
+  // The group code is the same: alongside, not part of. Checked here rather than in
+  // validate() so a wrong code costs nothing and reveals nothing about the rest.
+  //
+  // This is what stops a stranger who finds the URL from submitting. It is enforced
+  // here because a check in the browser would be worthless — anybody can edit that.
+  // If JOIN_CODE is unset the gate is skipped, which keeps a fresh deployment usable;
+  // set the secret and it locks.
+  const code = typeof body.code === 'string' ? body.code.trim() : '';
+  delete body.code;
+  if (env.JOIN_CODE && code !== env.JOIN_CODE) {
+    return json(
+      {
+        ok: false,
+        error: 'Wrong group code. Ask Mazine for it.',
+        badCode: true,
+      },
+      403
+    );
+  }
 
   const checked = validate(body);
   if (typeof checked === 'string') return json({ ok: false, error: checked }, 400);

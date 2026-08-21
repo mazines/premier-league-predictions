@@ -29,10 +29,13 @@
   const DRAFT_KEY = 'plp:draft:' + SEASON;
   const TOKEN_KEY = 'plp:token:' + SEASON;
   const EMAIL_KEY = 'plp:email:' + SEASON;
+  // Remembered so coming back to edit does not mean retyping it. It is a code shared
+  // with ten friends, not a password, so keeping it here costs nothing.
+  const CODE_KEY = 'plp:code:' + SEASON;
 
   const ORDINALS = ['1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th', '9th', '10th'];
 
-  const LIMIT = { name: 40, email: 120, award: 60, hot: 600 };
+  const LIMIT = { name: 40, email: 120, award: 60, hot: 600, code: 60 };
 
   // European qualification hint shown beside each top-7 position, the same way a real
   // league table colours its zones.
@@ -199,7 +202,7 @@
   // ---------------------------------------------------------------------------
   // State
   // ---------------------------------------------------------------------------
-  const state = { name: '', email: '' };
+  const state = { name: '', email: '', code: '' };
   PICKERS.forEach((q) => {
     state[q.key] = new Array(q.slots).fill(null);
   });
@@ -430,6 +433,14 @@
         'maxlength="' +
         LIMIT.email +
         '" autocomplete="email" inputmode="email" required placeholder="you@example.com" />' +
+        '</div>' +
+        '<div class="field">' +
+        '<label class="field-label" for="f-code">Group code<span class="req" aria-hidden="true">*</span></label>' +
+        '<input class="field-input" id="f-code" name="code" type="password" data-key="code" ' +
+        'maxlength="' +
+        LIMIT.code +
+        '" autocomplete="off" required placeholder="Ask Mazine if you do not have it" />' +
+        '<p class="field-hint">Keeps the form to our group. Same code for everyone.</p>' +
         '</div>' +
         '<p class="q-error" id="err-identity" role="alert" hidden></p>' +
         '</section>'
@@ -675,6 +686,8 @@
       errors.push({ key: 'identity', msg: 'Please enter your name.' });
     } else if (!isEmail(state.email)) {
       errors.push({ key: 'identity', msg: 'Please enter a valid email address.' });
+    } else if (!state.code.trim()) {
+      errors.push({ key: 'identity', msg: 'Please enter the group code.' });
     }
 
     PICKERS.forEach((q) => {
@@ -748,6 +761,9 @@
       name: state.name.trim(),
       email: state.email.trim().toLowerCase(),
       topN: state.topN.slice(),
+      // Travels with the entry but is not part of it. The Worker checks it, strips it,
+      // and never stores it.
+      code: state.code.trim(),
     };
 
     const releg = state.releg.filter(Boolean);
@@ -868,9 +884,11 @@
     if (data.ok) {
       if (data.token) writeToken(data.token);
       try {
-        // Remember the email so a later visit can pull the entry back, and drop the
-        // draft because the server copy is the record now.
+        // Remember the email so a later visit can pull the entry back, keep the group
+        // code so editing does not mean retyping it, and drop the draft because the
+        // server copy is the record now.
         localStorage.setItem(EMAIL_KEY, payloadEmail);
+        localStorage.setItem(CODE_KEY, state.code.trim());
         localStorage.removeItem(DRAFT_KEY);
       } catch (e) {
         // Nothing to clean up.
@@ -894,6 +912,14 @@
           esc(data.error || '') +
           ' If you have switched phone or browser, ask Mazine to reset your entry.'
       );
+      return;
+    }
+
+    // A wrong group code is also a 403, so check it before the closed-for-business
+    // branch below. Otherwise a mistyped code would wrongly claim submissions had shut.
+    if (data.badCode) {
+      showErrors([{ key: 'identity', msg: data.error || 'Wrong group code.' }]);
+      showResult('err', '<strong>Not saved.</strong> ' + esc(data.error || 'Wrong group code.'));
       return;
     }
 
@@ -1053,6 +1079,18 @@
   // Boot
   // ---------------------------------------------------------------------------
   const hadDraft = loadDraft();
+
+  // A draft carries the group code with it, but a draft is cleared on a successful
+  // submit. So on a later visit fall back to the remembered code, otherwise somebody
+  // editing their picks would have to go and ask for it again.
+  if (!state.code) {
+    try {
+      state.code = localStorage.getItem(CODE_KEY) || '';
+    } catch (e) {
+      // Private browsing. They will have to type it.
+    }
+  }
+
   render();
   renderChip(); // also sets the submit button's disabled state
   setInterval(renderChip, 30000);

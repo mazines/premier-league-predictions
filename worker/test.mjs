@@ -47,7 +47,7 @@ function check(label, condition, detail) {
     console.log('  ok   ' + label);
   } else {
     fail++;
-    console.log('  FAIL ' + label + (detail ? '  -> ' + detail : ''));
+    console.log('  FAIL ' + label + (detail ? '  -> ' + (typeof detail === 'string' ? detail : JSON.stringify(detail)) : ''));
   }
 }
 
@@ -180,13 +180,13 @@ const env = {
   },
 };
 
-async function post(rawBody) {
+async function post(rawBody, useEnv) {
   const req = new Request('https://worker.dev/submit', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'CF-Connecting-IP': '1.2.3.4' },
     body: rawBody,
   });
-  const res = await submitInternals.handleSubmit(req, env);
+  const res = await submitInternals.handleSubmit(req, useEnv || env);
   return { status: res.status, data: JSON.parse(await res.text()) };
 }
 
@@ -208,6 +208,66 @@ check(
   (badToken.data.error || '').indexOf('token') === -1,
   badToken
 );
+
+// The group code is what stops a stranger who finds the URL from submitting. It is
+// checked server-side, because a check in the browser would be worthless.
+console.log('\nthe group code gate:');
+
+const gatedKv = new Map();
+const gated = {
+  ADMIN_KEY: 'SECRET',
+  JOIN_CODE: 'up-the-arsenal',
+  PREDICTIONS: {
+    get: async (k) => (gatedKv.has(k) ? gatedKv.get(k) : null),
+    put: async (k, v) => {
+      gatedKv.set(k, v);
+    },
+    delete: async (k) => {
+      gatedKv.delete(k);
+    },
+    list: async () => ({ keys: [], list_complete: true }),
+  },
+};
+
+const send = (extra, useEnv) =>
+  post(JSON.stringify(Object.assign(base(), extra)), useEnv);
+
+let r = await send({}, gated);
+check('no code at all -> 403', r.status === 403 && r.data.badCode === true, r);
+
+r = await send({ code: 'guess' }, gated);
+check('a wrong code -> 403', r.status === 403 && r.data.badCode === true, r);
+
+r = await send({ code: '' }, gated);
+check('an empty code -> 403', r.status === 403, r);
+
+r = await send({ code: 12345 }, gated);
+check('a non-string code -> 403, not a crash', r.status === 403, r);
+
+r = await send({ code: 'UP-THE-ARSENAL' }, gated);
+check('the code is case sensitive', r.status === 403, r);
+
+r = await send({ code: '  up-the-arsenal  ', email: 'ws@example.com' }, gated);
+check('surrounding whitespace is tolerated', r.data.ok === true, r);
+
+r = await send({ code: 'up-the-arsenal', email: 'ok@example.com' }, gated);
+check('the right code is accepted', r.data.ok === true, r);
+
+check(
+  'the code is never written to storage',
+  [...gatedKv.values()].every((v) => v.indexOf('up-the-arsenal') === -1),
+  [...gatedKv.values()]
+);
+check(
+  'only the accepted submits are stored, none of the rejected ones',
+  [...gatedKv.keys()].filter((k) => k.startsWith('pred:')).length === 2,
+  [...gatedKv.keys()]
+);
+
+// A fresh deployment with no JOIN_CODE secret must still work, otherwise the form is
+// dead until somebody remembers to set it.
+r = await send({ email: 'nogate@example.com' }, env);
+check('with JOIN_CODE unset the gate is skipped', r.data.ok === true, r);
 
 console.log('\n' + pass + ' passed, ' + fail + ' failed');
 if (fail) process.exit(1);
