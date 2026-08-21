@@ -1,0 +1,24 @@
+name = "plp-predictions"
+main = "src/index.js"
+compatibility_date = "2026-08-21"
+
+# Both of these were being defaulted, and wrangler warns about that. Stating them
+# means a change to Cloudflare's defaults cannot quietly alter what is exposed.
+#   workers_dev  — serve at plp-predictions.mazzaleen.workers.dev. Needed: the site
+#                  calls this from the browser.
+#   preview_urls — a separate URL per deployed version. Not wanted. Same auth applies
+#                  to them, so it is not a hole, just more surface than this needs.
+workers_dev = true
+preview_urls = false
+
+# Bound in code as env.PREDICTIONS.
+# A namespace id is not a credential — reaching the data still needs your Cloudflare
+# account auth — so it is fine to commit. Recreate one with
+# `wrangler kv namespace create PREDICTIONS`.
+[[kv_namespaces]]
+binding = "PREDICTIONS"
+id = "cf1c460cfa0c43ddaaac5caca00e3041"
+
+# ADMIN_KEY is a secret, not a var. Set it with:
+#   wrangler secret put ADMIN_KEY
+# Never put it in this file — this repo is public.

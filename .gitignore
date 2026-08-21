@@ -1,7 +1,13 @@
 .DS_Store
 .vscode/
 .idea/
+.claude/
 *.log
 csvs/*
 CLAUDE.md
 results.md
+
+# Wrangler's local state. The account cache holds a Cloudflare account id and the
+# account email, and this repo is public. .dev.vars holds local secrets.
+.wrangler/
+.dev.vars

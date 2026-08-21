@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Crest ID finder — maintenance tool</title>
+    <link rel="stylesheet" href="../assets/styles.css" />
+    <style>
+      .tool { max-width: 1100px; margin: 0 auto 32px; }
+      .tool h2 { font-size: 14px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--gold-soft); margin: 0 0 8px; }
+      .tool p { color: rgba(244,244,247,0.75); font-size: 13px; line-height: 1.6; margin: 0 0 16px; }
+      .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 22px 26px; margin: 0 0 18px; }
+      .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 10px; }
+      .cell { background: var(--panel-2); border: 1px solid var(--line); border-radius: 8px; padding: 10px 8px; text-align: center; }
+      .cell img { width: 40px; height: 40px; object-fit: contain; background: rgba(255,255,255,0.92); border-radius: 4px; padding: 2px; }
+      .cell .id { display: block; margin-top: 6px; font-size: 11px; font-weight: 700; color: var(--gold-soft); font-variant-numeric: tabular-nums; }
+      .cell .code { display: block; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+      .cell.missing { border-color: #ff5466; }
+      .cell .none { display: block; height: 40px; line-height: 40px; font-size: 10px; color: #ff5466; }
+      pre { background: #0e0e16; border: 1px solid var(--line); border-radius: 8px; padding: 14px; overflow-x: auto; font-size: 12px; color: var(--text); }
+      .row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin: 0 0 14px; }
+      input[type='number'] { width: 90px; padding: 8px 10px; background: var(--panel-2); border: 1px solid var(--line); border-radius: 8px; color: var(--text); font-family: inherit; }
+    </style>
+  </head>
+  <body>
+    <header class="title-block">
+      <div class="title-text">
+        <p class="kicker">Maintenance tool</p>
+        <h1>Crest ID finder</h1>
+        <a class="scoring-link" href="../predict.html">Back to the form →</a>
+      </div>
+    </header>
+
+    <section class="tool">
+      <div class="panel">
+        <h2>1 · Check what is configured now</h2>
+        <p>
+          Every club in <code>assets/teams.js</code>, showing the badge that its current
+          <code>espnId</code> actually returns. Any badge that does not match its code is a wrong
+          id. A red cell has no id set at all, which renders as a plain coloured chip in the form.
+        </p>
+        <div class="grid" id="configured"></div>
+      </div>
+
+      <div class="panel">
+        <h2>2 · Ask ESPN directly</h2>
+        <p>
+          Tries ESPN's public team list for the Premier League and the Championship. If your
+          browser allows the request, this is the authoritative answer — copy the block and hand it
+          over. If it fails on CORS, use the sweep below instead.
+        </p>
+        <div class="row">
+          <button class="btn" id="fetch-btn" type="button">Fetch from ESPN</button>
+          <span class="picker-count" id="fetch-status"></span>
+        </div>
+        <pre id="fetch-out" hidden></pre>
+      </div>
+
+      <div class="panel">
+        <h2>3 · Sweep a range of ids</h2>
+        <p>
+          Renders every badge in a range so you can find a club by eye. Ids used by English clubs
+          sit roughly between 300 and 400. Find Coventry and Hull, note the numbers under them, and
+          check Everton and Fulham while you are here.
+        </p>
+        <div class="row">
+          from <input type="number" id="from" value="300" />
+          to <input type="number" id="to" value="420" />
+          <button class="btn" id="sweep-btn" type="button">Sweep</button>
+          <span class="picker-count" id="sweep-status"></span>
+        </div>
+        <div class="grid" id="sweep"></div>
+      </div>
+    </section>
+
+    <script src="../assets/teams.js"></script>
+    <script>
+      const CREST = (id) => 'https://a.espncdn.com/i/teamlogos/soccer/500/' + id + '.png';
+
+      // Section 1 — what teams.js currently claims
+      const configured = document.getElementById('configured');
+      configured.innerHTML = window.PL_TEAMS.concat(window.PL_DEPARTED)
+        .map((t) => {
+          const body = t.espnId
+            ? '<img src="' + CREST(t.espnId) + '" alt="" loading="lazy" />' +
+              '<span class="id">' + t.espnId + '</span>'
+            : '<span class="none">no id</span><span class="id">—</span>';
+          return (
+            '<div class="cell' + (t.espnId ? '' : ' missing') + '" title="' + t.name + '">' +
+            body + '<span class="code">' + t.code + '</span></div>'
+          );
+        })
+        .join('');
+
+      // Section 2 — ask ESPN, if CORS lets us
+      document.getElementById('fetch-btn').addEventListener('click', () => {
+        const status = document.getElementById('fetch-status');
+        const out = document.getElementById('fetch-out');
+        status.textContent = 'fetching…';
+
+        const leagues = ['eng.1', 'eng.2'];
+        Promise.all(
+          leagues.map((lg) =>
+            fetch('https://site.api.espn.com/apis/site/v2/sports/soccer/' + lg + '/teams')
+              .then((r) => r.json())
+              .then((d) => ({
+                lg: lg,
+                teams: d.sports[0].leagues[0].teams.map((x) => x.team),
+              }))
+              .catch((e) => ({ lg: lg, error: String(e) }))
+          )
+        ).then((results) => {
+          let text = '';
+          results.forEach((r) => {
+            text += '# ' + r.lg + '\n';
+            if (r.error) {
+              text += '  failed: ' + r.error + '\n\n';
+              return;
+            }
+            r.teams
+              .slice()
+              .sort((a, b) => a.displayName.localeCompare(b.displayName))
+              .forEach((t) => {
+                text += '  ' + String(t.abbreviation || '???').padEnd(6) + String(t.id).padEnd(6) + t.displayName + '\n';
+              });
+            text += '\n';
+          });
+          out.textContent = text;
+          out.hidden = false;
+          status.textContent = 'done — copy the block above';
+        });
+      });
+
+      // Section 3 — brute-force visual sweep
+      document.getElementById('sweep-btn').addEventListener('click', () => {
+        const from = Number(document.getElementById('from').value);
+        const to = Number(document.getElementById('to').value);
+        const status = document.getElementById('sweep-status');
+        const grid = document.getElementById('sweep');
+
+        if (!(to > from) || to - from > 600) {
+          status.textContent = 'pick a sensible range';
+          return;
+        }
+
+        let html = '';
+        for (let id = from; id <= to; id++) {
+          // Ids with no club just 404, so drop the whole cell rather than leave a gap.
+          html +=
+            '<div class="cell"><img src="' + CREST(id) + '" alt="" loading="lazy" ' +
+            'onerror="this.closest(\'.cell\').remove()" />' +
+            '<span class="id">' + id + '</span></div>';
+        }
+        grid.innerHTML = html;
+        status.textContent = 'rendering ' + (to - from + 1) + ' ids — empty ones disappear';
+      });
+    </script>
+  </body>
+</html>
