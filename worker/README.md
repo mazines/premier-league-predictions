@@ -64,9 +64,9 @@ The last case is deliberately not an error. A locked page is a normal state.
 
 Emails and edit tokens are never included in a `/picks` response, whichever branch runs.
 
-`REVEAL_ISO` sits at the top of `src/index.js`. It ships as `2027-06-01`, a placeholder that
-is safely after the last match of the season, so it can only ever reveal late rather than
-early. Set it to the real final day.
+`REVEAL_ISO` sits at the top of `src/index.js`, set to Sunday 30 May 2027, 18:00 BST. That
+is the final day of the season, two hours after the ten simultaneous 16:00 kickoffs, so the
+last whistle has gone before anybody sees anybody else's picks.
 
 ## How entries are protected
 

@@ -32,10 +32,11 @@ const DEADLINE_ISO = '2026-09-01T22:00:00Z';
 // present the edit token they were given on submit. So nobody can read anybody
 // else's calls, and knowing an email address gets you nothing.
 //
-// TODO: set this to the actual final day of the 2026/27 season. June 1st is a safe
-// placeholder — it is definitely after the last match, so it can only reveal late,
-// never early.
-const REVEAL_ISO = '2027-06-01T00:00:00Z';
+// Set to Sunday 30 May 2027, 18:00 BST — the final day of the season. All ten
+// matches kick off together at 16:00 BST, so this lands just after the last whistle
+// and the season is genuinely over. BST is UTC+1, so 17:00Z. That is 13:00 ET and
+// 10:00 PT.
+const REVEAL_ISO = '2027-05-30T17:00:00Z';
 
 const SEASON = '2026-2027';
 
