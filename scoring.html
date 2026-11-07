@@ -7,18 +7,23 @@
     <link rel="stylesheet" href="assets/styles.css" />
   </head>
   <body>
-    <header class="title-block">
-      <img class="pl-logo" src="https://upload.wikimedia.org/wikipedia/en/f/f2/Premier_League_Logo.svg" alt="Premier League" onerror="this.remove()" />
-      <div class="title-text">
-        <p class="kicker">Rubric</p>
-        <h1>Scoring System</h1>
-        <a class="scoring-link" href="index.html">All seasons →</a>
-      </div>
-    </header>
+    <div class="shell">
+      <aside class="rail">
+        <div class="brand"><a href="index.html">Premier League<br />Predictions</a></div>
+        <nav>
+          <a href="index.html">All seasons</a>
+          <a href="scoring.html" aria-current="page">Scoring</a>
+        </nav>
+        <a class="submit" href="predict.html">Submit yours</a>
+      </aside>
+      <main>
+        <div class="masthead">
+          <h1>Scoring System</h1>
+        </div>
 
-    <section class="rubric-panel">
-      <h2>Final table — Top N</h2>
-      <table class="rubric">
+        <section class="rubric">
+          <h2>Final table — Top N</h2>
+<table class="rubric-table">
         <thead>
           <tr><th>Outcome</th><th>Points</th><th>Notes</th></tr>
         </thead>
@@ -29,11 +34,11 @@
           <tr class="total"><td class="cat">Top-N max</td><td class="pts">N × 3 + 2</td><td class="note">20 for a top-6 season, 23 for a top-7 one</td></tr>
         </tbody>
       </table>
-    </section>
+        </section>
 
-    <section class="rubric-panel">
-      <h2>Relegation</h2>
-      <table class="rubric">
+        <section class="rubric">
+          <h2>Relegation</h2>
+<table class="rubric-table">
         <thead>
           <tr><th>Outcome</th><th>Points</th><th>Notes</th></tr>
         </thead>
@@ -42,11 +47,11 @@
           <tr class="total"><td class="cat">Relegation max</td><td class="pts">3</td><td class="note">Only counted in seasons that collected it (not 2021/22)</td></tr>
         </tbody>
       </table>
-    </section>
+        </section>
 
-    <section class="rubric-panel">
-      <h2>Individual awards</h2>
-      <table class="rubric">
+        <section class="rubric">
+          <h2>Individual awards</h2>
+<table class="rubric-table">
         <thead>
           <tr><th>Award</th><th>Points</th><th>Notes</th></tr>
         </thead>
@@ -61,11 +66,11 @@
           <tr class="total"><td class="cat">Awards max</td><td class="pts">4–9</td><td class="note">Varies by season</td></tr>
         </tbody>
       </table>
-    </section>
+        </section>
 
-    <section class="rubric-panel">
-      <h2>Per-season totals</h2>
-      <table class="rubric">
+        <section class="rubric">
+          <h2>Per-season totals</h2>
+<table class="rubric-table">
         <thead>
           <tr><th>Season</th><th>Max</th><th>Breakdown</th></tr>
         </thead>
@@ -78,6 +83,8 @@
           <tr><td class="cat">2026/27</td><td class="pts">35</td><td class="note">7×3 + 2 mega + 9 awards + 3 relegation</td></tr>
         </tbody>
       </table>
-    </section>
+        </section>
+      </main>
+    </div>
   </body>
 </html>
