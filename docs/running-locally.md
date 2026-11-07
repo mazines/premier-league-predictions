@@ -202,19 +202,20 @@ category label strings that the green-tick logic finds by reading text — see
 Run `test.mjs` after any change to `VALID_CODES`, the field limits or `validate()`, and
 `test-access.mjs` after any change to `/picks` or `REVEAL_ISO`.
 
-## Check you have not broken the old pages
+## Check you have not broken the season pages
 
-This is the main regression risk, because `scoreboard.js` is shared. Open all five and
-confirm:
+Every season page renders through the same renderer, so one mistake shows up everywhere.
+Open two and confirm:
 
-- The leaderboard fills in, with ranks and points.
-- Clicking a row expands a points breakdown.
-- Green ticks appear on correct picks.
-- Clicking a participant's column header hides the others, and clicking it again restores
-  them.
+- The matrix opens with the Actual column: final table, relegation, awards.
+- Each column header reads a name, a rank and points out of the season maximum.
+- The `Actual` button adds a pinned column; pressing it again removes it.
+- A name chip hides that person's column, header included.
+- Green ticks appear on correct picks only.
+- `Hot takes` flips between Disappointment and Surprise.
 
-The renderer skips any page without `data-render="auto"`, and `test/renderer.mjs` asserts
-that none of the five carry it. But it costs thirty seconds to look.
+`node test/renderer.mjs` asserts the arithmetic, the row shape and the markup. It does not
+check layout, so the short visual pass above is still worth the thirty seconds.
 
 ## Deploy the Worker for real
 

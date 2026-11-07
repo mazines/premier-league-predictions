@@ -63,8 +63,8 @@ making data the source of truth.
        |                     returns only the visitor's OWN entry
        |  merges into SEASON_CONFIG, then loads scoreboard.js
        v
-  assets/scoreboard.js       builds the table, the hot takes, the leaderboard,
-                             the points breakdowns and the green ticks
+  assets/scoreboard.js       builds the matrix, each person's rank, the Actual
+                             column, the hot takes and the green ticks
 ```
 
 The client never decides anything that matters. It validates purely so people get an answer
@@ -105,8 +105,7 @@ like the others, and the Worker becomes irrelevant to it. Step 5 in the README c
 
 **`assets/teams.js`** is the roster, and the only place it exists. It holds each club's
 three-letter code, full name and ESPN crest id, and it exports `teamPill()`, which returns
-exactly the pill markup the older pages hand-write. The form's chips, the rendered tables
-and the relegation stacks all come from it. Next August this is the one file to edit.
+the one pill markup used across the site. The form's chips and the matrix both come from it. Next August this is the one file to edit.
 
 **`assets/config.js`** holds the Worker URL and the season. Both the form and the season page
 read it, so the URL cannot be right in one place and stale in the other — which was a real
@@ -117,48 +116,41 @@ type of control it needs, whether it is required, what help text to show, which 
 and which European place each position earns. Add an entry and a new question appears, styled
 and validated. There is no markup to write.
 
-**`data-render="auto"`** opts a season page into having its table built from data. See
-below.
+**`assets/seasons/<season>.js`** holds one season's numbers: the table size, the awards and
+their values, the relegation flag, the actual results, everyone's picks and the hot takes.
+Each season page loads its own file, and `index.html` loads all six, so the home tiles and
+the season page read the same figures. There is one copy.
 
-## Two kinds of season page
+**`[data-season]` and `[data-takes]`** are the only hooks a page needs. `assets/scoreboard.js`
+builds the name controls, the matrix and the hot takes into them, from
+whatever `window.SEASON_CONFIG` holds.
 
-Pages up to 2025/26 hand-write their prediction table. Newer ones do not.
+## One season page shape
 
-A table marked `data-render="auto"` with an empty `<thead>` and `<tbody>` gets built by
-`assets/scoreboard.js` from `SEASON_CONFIG`. That removes the per-participant `<td>`
-duplication, the hand-maintained `colspan`, and every copied crest URL.
-`<section class="commentary" data-render="auto">` does the same for the hot takes cards.
+Every season page is the same nine lines of markup: the rail, a masthead, the two hooks. The
+data lives in its season file; the markup carries no table, no crest URLs and no picks.
 
-Pages **without** the attribute are skipped entirely, which is why the five older ones keep
-working untouched. This was deliberate: the alternative was rewriting five pages that already
-worked, to no benefit.
-
-`pages/2026-2027.html` is the one to copy for a new season.
-
-### The label contract
-
-This is the sharpest edge in the codebase, so it is worth understanding.
-
-The green ticks on correct picks are not driven by data attributes. `scoreboard.js` walks the
-table and works out what each row means **by reading the category text**:
-
-```js
-const posMatch = cat.match(/^(\d+)(st|nd|rd|th)$/);   // "1st", "2nd", ...
-if (cat.toLowerCase().startsWith('relegation')) ...
-if (cat.startsWith('PFA YPOTY')) key = 'ypoty';       // survives the "(U23)" suffix
-else if (categoryMap[cat]) key = categoryMap[cat].key;
+```html
+<script src="../assets/seasons/2025-2026.js"></script>
+<script>window.SEASON_CONFIG = window.SEASONS['2025-2026'];</script>
+<script src="../assets/scoreboard.js"></script>
 ```
 
-So those strings — `1st`…`7th`, `Relegation`, `PFA POTY`, `PFA YPOTY`, `Golden Boot`,
-`Playmaker`, `Golden Glove`, `MOTY`, `Signing of the Season` — are a contract between the
-renderer and the tick-marking. Change one and nothing throws. The ticks just quietly stop
-appearing.
+`assets/scoreboard.js` splits into two halves. `buildActual`, `buildMatrix`, `buildControls`
+and `buildTakes` are pure functions that return HTML strings and take the config as an
+argument; they are published on `window.PLP_BUILD` before any DOM work, which is why
+`index.html` can load the file without a season of its own. The second half finds the hooks,
+writes the HTML in and wires the controls.
 
-`test/renderer.mjs` exists mainly to pin this down. It also checks that a generated Arsenal
-pill is byte-identical to the one in `pages/2025-2026.html`.
+**Ticks are explicit.** A correct pick is marked where it is built, by comparing the pick
+with `actualResults` at that line. There is no second pass that re-reads the rendered table,
+so renaming a category label cannot silently switch the ticks off.
 
-**When you add an award**, add it to `categoryMap` in `scoreboard.js` too, or its picks will
-never be ticked.
+`test/renderer.mjs` covers the arithmetic, the ranking, the row shape, the escaping and the
+markup the pages are expected to carry.
+
+**When you add an award**, add it to the season file's `awards` array with its `key`, `label`
+and `max`. The matrix and the season maximum both derive from that list.
 
 ## Design decisions worth knowing
 

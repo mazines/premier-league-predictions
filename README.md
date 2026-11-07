@@ -32,7 +32,9 @@ The form works with no backend at all, so that is enough to try everything excep
 | `pages/YYYY-YYYY.html` | One infographic per season |
 | `assets/config.js` | **Worker URL and season.** The one file to edit after deploying |
 | `assets/teams.js` | **The club roster.** Single source of truth |
-| `assets/scoreboard.js` | Scoring, leaderboard, and the optional table renderer |
+| `assets/scoreboard.js` | Season renderer: matrix, Actual column, ranks, hot takes |
+| `assets/seasons/YYYY-YYYY.js` | **One season's numbers.** Picks, actual results, awards, hot takes |
+| `assets/home.js` | Builds the season tiles on `index.html` |
 | `assets/season-fetch.js` | Fetches the picks for a locked season page, then loads `scoreboard.js` |
 | `assets/predict.js` | The form: questions, pickers, validation, submission |
 | `assets/styles.css` | Everything except the form |
@@ -49,9 +51,9 @@ The form works with no backend at all, so that is enough to try everything excep
 
 **3. Through the season.** Nothing to do. The season page fetches the picks itself, and until `REVEAL_ISO` the Worker only hands each visitor their own entry. Add `?key=$ADMIN_KEY` to the page URL to see them all.
 
-**4. When it finishes.** Fill in `actualResults` in `pages/YYYY-YYYY.html`. The leaderboard, the points breakdowns and the green ticks all follow from that.
+**4. When it finishes.** Fill in `actualResults` in `assets/seasons/YYYY-YYYY.js`. The matrix ranks, the points out of the season maximum, the home tile and the green ticks all follow from it.
 
-**5. Then make the page permanent.** Once the picks are public there is no reason for the page to keep depending on the Worker, and a good reason not to: if the Worker ever goes away, the page goes blank. Paste the picks in and it becomes self-contained like the older seasons:
+**5. Then make the page permanent.** Once the picks are public there is no reason for the page to keep depending on the Worker, and a good reason not to: if the Worker ever goes away, the page goes blank. Paste the picks into its season file and it becomes self-contained like the older seasons:
 
 ```sh
 curl -s "https://<worker-url>/export?key=$ADMIN_KEY" > export.json

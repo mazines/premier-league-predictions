@@ -6,30 +6,59 @@
     <title>Crest ID finder — maintenance tool</title>
     <link rel="stylesheet" href="../assets/styles.css" />
     <style>
-      .tool { max-width: 1100px; margin: 0 auto 32px; }
-      .tool h2 { font-size: 14px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--gold-soft); margin: 0 0 8px; }
-      .tool p { color: rgba(244,244,247,0.75); font-size: 13px; line-height: 1.6; margin: 0 0 16px; }
-      .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 22px 26px; margin: 0 0 18px; }
-      .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 10px; }
-      .cell { background: var(--panel-2); border: 1px solid var(--line); border-radius: 8px; padding: 10px 8px; text-align: center; }
-      .cell img { width: 40px; height: 40px; object-fit: contain; background: rgba(255,255,255,0.92); border-radius: 4px; padding: 2px; }
-      .cell .id { display: block; margin-top: 6px; font-size: 11px; font-weight: 700; color: var(--gold-soft); font-variant-numeric: tabular-nums; }
-      .cell .code { display: block; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
-      .cell.missing { border-color: #ff5466; }
-      .cell .none { display: block; height: 40px; line-height: 40px; font-size: 10px; color: #ff5466; }
-      pre { background: #0e0e16; border: 1px solid var(--line); border-radius: 8px; padding: 14px; overflow-x: auto; font-size: 12px; color: var(--text); }
+      .tool { margin: 0 0 28px; }
+      .tool h2 {
+        margin: 0 0 8px;
+        padding-bottom: 5px;
+        border-bottom: 1px solid var(--forest);
+        font-family: var(--slab);
+        font-weight: 400;
+        font-size: 19px;
+        color: var(--forest);
+        text-transform: uppercase;
+      }
+      .tool p { color: var(--ink-2); font-size: 13px; line-height: 1.6; margin: 0 0 16px; max-width: 70ch; }
+      .panel { border: 1px solid var(--forest); background: rgba(255,255,255,.38); padding: 18px 20px; margin: 0 0 18px; }
+      .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); gap: 10px; }
+      .cell { background: var(--cream-2); border: 1px solid var(--cream-3); padding: 10px 8px; text-align: center; }
+      .cell img { width: 40px; height: 40px; object-fit: contain; background: rgba(255,255,255,.92); padding: 2px; }
+      .cell .id { display: block; margin-top: 6px; font-family: var(--slab); font-size: 13px; color: var(--forest); font-variant-numeric: tabular-nums; }
+      .cell .code { display: block; font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+      .cell.missing { border-color: var(--danger); }
+      .cell .none { display: block; height: 40px; line-height: 40px; font-size: 11px; color: var(--danger); }
+      pre { background: var(--cream-2); border: 1px solid var(--cream-3); padding: 14px; overflow-x: auto; font-size: 12px; color: var(--ink); }
       .row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin: 0 0 14px; }
-      input[type='number'] { width: 90px; padding: 8px 10px; background: var(--panel-2); border: 1px solid var(--line); border-radius: 8px; color: var(--text); font-family: inherit; }
+      input[type='number'] {
+        width: 92px; padding: 8px 10px; background: var(--cream); border: 1px solid var(--cream-3);
+        color: var(--ink); font-family: inherit; font-size: 13px;
+      }
+      .btn {
+        padding: 8px 14px; border: 1px solid var(--forest); background: none; color: var(--forest);
+        font-family: inherit; font-size: 11px; letter-spacing: .14em; text-transform: uppercase;
+        font-weight: 700; cursor: pointer;
+      }
+      .btn:hover { background: var(--forest); color: var(--cream); }
+      .picker-count { font-size: 11px; color: var(--muted); }
+      code { background: var(--cream-2); padding: 1px 4px; font-size: 12px; }
     </style>
   </head>
   <body>
-    <header class="title-block">
-      <div class="title-text">
-        <p class="kicker">Maintenance tool</p>
-        <h1>Crest ID finder</h1>
-        <a class="scoring-link" href="../predict.html">Back to the form →</a>
-      </div>
-    </header>
+    <div class="shell">
+      <aside class="rail">
+        <div class="brand"><a href="../index.html">Premier League<br />Predictions</a></div>
+        <nav>
+          <a href="../index.html">All seasons</a>
+          <a href="../scoring.html">Scoring</a>
+        </nav>
+        <a class="submit" href="../predict.html">Submit yours</a>
+      </aside>
+      <main>
+        <div class="masthead">
+          <div>
+            <p class="kicker">Maintenance tool</p>
+            <h1>Crest ID finder</h1>
+          </div>
+        </div>
 
     <section class="tool">
       <div class="panel">
@@ -72,6 +101,8 @@
         <div class="grid" id="sweep"></div>
       </div>
     </section>
+      </main>
+    </div>
 
     <script src="../assets/teams.js"></script>
     <script>
@@ -79,7 +110,7 @@
 
       // Section 1 — what teams.js currently claims
       const configured = document.getElementById('configured');
-      configured.innerHTML = window.PL_TEAMS.concat(window.PL_DEPARTED)
+      configured.innerHTML = window.PL_TEAMS.concat(window.PL_DEPARTED, window.PL_HISTORIC || [])
         .map((t) => {
           const body = t.espnId
             ? '<img src="' + CREST(t.espnId) + '" alt="" loading="lazy" />' +

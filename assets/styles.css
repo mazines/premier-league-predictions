@@ -1,267 +1,438 @@
+/* ==========================================================================
+   Premier League Predictions.
+
+   The season reads like a printed record: cream stock, forest ink, one gold
+   accent, slab headings, hairline rules. Colour is reserved for club data and
+   for the three medal ranks.
+
+   Two type scales live here: desktop, and a phone scale near the bottom. The
+   matrix is dense by nature, so its smallest text is still 11px on desktop.
+
+   Structure:
+     1. Tokens
+     2. Base
+     3. Shell and rail
+     4. Masthead
+     5. Controls
+     6. Matrix
+     7. Club pills
+     8. Hot takes
+     9. Home tiles
+    10. Rubric
+    11. Reveal notice
+    12. Narrow screens
+   ========================================================================== */
+
+/* 1. Tokens ---------------------------------------------------------------- */
+
 :root {
-  --bg: #0b0b10;
-  --panel: #14141c;
-  --panel-2: #1c1c26;
-  --line: #2a2a36;
-  --text: #f4f4f7;
-  --muted: #8a8a99;
-  --pl: #37003c;
-  --pl-2: #5a0c66;
-  --gold: #d4af37;
-  --gold-soft: #efd58a;
-  --accent: #00ff85;
+  --cream: #f3ebda;
+  --cream-2: #eae0c9;
+  --cream-3: #ded1b2;
+  --cream-4: #e7e0cb;
+  --forest: #123b2b;
+  --forest-2: #1c523c;
+  --gold: #b8892b;
+  --ink: #221f18;
+  --ink-2: #4d4636;
+  --muted: #7d7360;
+  --danger: #a83a2c;
+
+  --slab: "Rockwell", "Rockwell Nova", "Bookman Old Style", Georgia,
+    "Times New Roman", serif;
+  --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+
+  /* Names the form stylesheet already reads, so predict.css keeps working. */
+  --paper: var(--cream);
+  --paper-2: var(--cream-2);
+  --rule: var(--cream-3);
+  --rule-strong: #cdc2a4;
+  --accent: var(--forest);
+  --accent-wash: #e8e2ce;
+  --green: var(--forest-2);
+  --gold-soft: var(--gold);
+  --serif: var(--slab);
+  --radius: 0;
+  --rail: 206px;
+  --catw: 110px;
 }
+
+/* 2. Base ------------------------------------------------------------------ */
+
 * { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
 html, body { margin: 0; padding: 0; }
+
 body {
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", system-ui, sans-serif;
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 14px;
+  line-height: 1.6;
   background:
-    radial-gradient(1200px 600px at 80% -10%, rgba(90, 12, 102, 0.35), transparent 60%),
-    radial-gradient(900px 500px at -10% 110%, rgba(0, 255, 133, 0.08), transparent 60%),
-    var(--bg);
-  color: var(--text);
-  min-height: 100vh;
-  padding: 32px 24px 64px;
+    radial-gradient(circle at 1px 1px, rgba(34, 31, 24, 0.05) 1px, transparent 0) 0 0 / 7px 7px,
+    var(--cream);
+  -webkit-font-smoothing: antialiased;
 }
 
-a { color: var(--gold-soft); }
+a { color: var(--forest); text-decoration: none; }
 
-header.title-block {
-  max-width: 1700px;
-  margin: 0 auto 32px;
-  padding: 28px 32px;
+:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+
+::selection { background: var(--forest); color: var(--cream); }
+
+img { max-width: 100%; }
+
+/* 3. Shell and rail -------------------------------------------------------- */
+
+.shell {
+  display: grid;
+  grid-template-columns: var(--rail) 1fr;
+  min-height: 100vh;
+}
+
+.rail {
+  border-right: 1px solid var(--forest);
+  background: var(--cream-2);
+  padding: 22px 15px 26px;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.rail .brand {
+  font-family: var(--slab);
+  font-size: 19px;
+  line-height: 1.12;
+  color: var(--forest);
+  text-transform: uppercase;
+  padding-bottom: 11px;
+  border-bottom: 3px double var(--forest);
+}
+.rail .brand a { color: inherit; }
+
+.rail nav { display: flex; flex-direction: column; gap: 1px; }
+
+.rail nav a {
+  padding: 8px 10px;
+  font-size: 11.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--ink-2);
+  border-left: 2px solid transparent;
+}
+.rail nav a:hover { color: var(--forest); border-left-color: var(--forest); }
+.rail nav a[aria-current="page"] {
+  color: var(--forest);
+  border-left-color: var(--gold);
+  background: rgba(18, 59, 43, 0.06);
+}
+
+/* On a season page the season itself is what is current. Its two sub-links are
+   shortcuts to a section, so they never take the highlight. */
+.rail nav .group {
+  display: block;
+  padding: 8px 10px 4px;
+  font-size: 11.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--forest);
+}
+
+.rail nav a.sub {
+  padding: 4px 10px 4px 20px;
+  font-size: 10.5px;
+  letter-spacing: 0.1em;
+  border-left: 2px solid transparent;
+  color: var(--ink-2);
+}
+.rail nav a.sub:hover { color: var(--forest); border-left-color: var(--cream-3); }
+.rail nav a.sub + a.top { margin-top: 8px; }
+
+.rail .submit {
+  margin-top: auto;
+  text-align: center;
+  padding: 11px;
+  border: 1px solid var(--forest);
+  font-size: 11.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--forest);
+}
+.rail .submit:hover { background: var(--forest); color: var(--cream); }
+.rail .submit[aria-current="page"] { background: var(--forest); color: var(--cream); }
+
+main { padding: 26px 28px 80px; min-width: 0; }
+
+/* In-page jumps land below the sticky bar on a phone, not behind it. */
+#matrix, #hot-takes { scroll-margin-top: 16px; }
+
+/* 4. Masthead -------------------------------------------------------------- */
+
+.masthead {
+  border-bottom: 3px double var(--forest);
+  padding-bottom: 11px;
+  margin: 0 0 20px;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 18px;
+  flex-wrap: wrap;
+}
+
+.masthead h1 {
+  font-family: var(--slab);
+  font-weight: 400;
+  font-size: clamp(26px, 3.3vw, 38px);
+  text-transform: uppercase;
+  letter-spacing: 0;
+  line-height: 1.05;
+  margin: 0;
+  color: var(--forest);
+}
+
+.masthead .kicker {
+  margin: 0 0 6px;
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.status {
+  margin: 0;
+  font-size: 11.5px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--muted);
+}
+.status a { text-decoration: underline; text-underline-offset: 2px; }
+.status a:hover { color: var(--forest); }
+
+/* 5. Controls -------------------------------------------------------------- */
+
+.controls {
   display: flex;
   align-items: center;
-  gap: 28px;
-  background: linear-gradient(135deg, var(--pl) 0%, var(--pl-2) 60%, #2a0030 100%);
-  border: 1px solid rgba(255,255,255,0.08);
-  border-radius: 16px;
-  box-shadow: 0 12px 40px rgba(0,0,0,0.4);
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 0 0 10px;
 }
-header.title-block .pl-logo {
-  height: 60px;
-  width: auto;
+
+.chips { display: flex; flex-wrap: wrap; gap: 5px; }
+
+.chipx {
+  padding: 4px 10px;
+  border: 1px solid var(--cream-3);
+  background: transparent;
+  font-family: inherit;
+  font-size: 11.5px;
+  letter-spacing: 0.04em;
+  color: var(--ink-2);
+  cursor: pointer;
+}
+.chipx:hover { border-color: var(--forest); color: var(--forest); }
+.chipx[aria-pressed="true"] {
+  background: var(--forest);
+  border-color: var(--forest);
+  color: var(--cream);
+}
+
+.tabx {
   flex-shrink: 0;
-  background: #ffffff;
-  padding: 12px 18px;
-  border-radius: 12px;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.35);
-}
-header.title-block .title-text { flex: 1; min-width: 0; }
-header h1 {
-  margin: 0;
-  font-size: 34px;
-  letter-spacing: -0.02em;
-  font-weight: 800;
-  line-height: 1.1;
-}
-header p.kicker {
-  margin: 0 0 6px;
-  color: rgba(255,255,255,0.75);
-  font-size: 13px;
-  letter-spacing: 0.18em;
+  padding: 6px 14px;
+  border: 1px solid var(--forest);
+  background: none;
+  font-family: inherit;
+  font-size: 10.5px;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
-  font-weight: 600;
-}
-header .scoring-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  margin-top: 12px;
-  padding: 8px 14px;
-  background: rgba(255,255,255,0.06);
-  border: 1px solid rgba(255,255,255,0.14);
-  color: var(--gold-soft);
-  text-decoration: none;
-  border-radius: 8px;
-  font-size: 12px;
-  letter-spacing: 0.06em;
-  font-weight: 600;
-  text-transform: uppercase;
-  transition: border-color 120ms, color 120ms;
-}
-header .scoring-link:hover { border-color: var(--gold); color: var(--accent); }
-
-.table-wrap {
-  max-width: 1700px;
-  margin: 0 auto;
-  background: var(--panel);
-  border: 1px solid var(--line);
-  border-radius: 16px;
-  overflow: hidden;
-  box-shadow: 0 12px 40px rgba(0,0,0,0.35);
-}
-.scroll {
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-}
-
-table.predictions {
-  border-collapse: separate;
-  border-spacing: 0;
-  width: 100%;
-  min-width: 1200px;
-  font-size: 13px;
-}
-table.predictions th.friend { min-width: 110px; }
-table.predictions thead th {
-  background: linear-gradient(180deg, #1f1f2c, #14141c);
-  color: var(--text);
   font-weight: 700;
+  color: var(--forest);
+  cursor: pointer;
+}
+.tabx[aria-pressed="true"] { background: var(--forest); color: var(--cream); }
+
+/* 6. Matrix ---------------------------------------------------------------- */
+
+.matrixwrap { overflow-x: auto; margin: 0 0 26px; }
+
+table.matrix {
+  border-collapse: collapse;
+  width: max-content;
+  min-width: 100%;
+}
+
+table.matrix th {
   text-align: left;
-  padding: 14px 12px;
-  border-bottom: 1px solid var(--line);
+  padding: 6px 6px 7px;
+  border-bottom: 1px solid var(--forest);
   white-space: nowrap;
-  font-size: 12px;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
+  vertical-align: bottom;
 }
-table.predictions thead th.cat-col { color: var(--muted); }
-table.predictions thead th.friend { color: var(--gold-soft); }
 
-/* Compare mode — click a friend header to focus that column alongside Actual */
-table.predictions th.friend { cursor: pointer; transition: color 120ms; }
-table.predictions th.friend:hover { color: var(--accent); }
-table.predictions th.friend.compare-focus {
-  color: var(--accent);
-  background: linear-gradient(180deg, #182518, #0e1812);
-  box-shadow: inset 0 -2px 0 var(--accent);
-}
-table.predictions .compare-hidden { display: none; }
-table.predictions[data-compare] { min-width: 0; }
-table.predictions tbody td {
-  padding: 10px 12px;
-  border-bottom: 1px solid rgba(255,255,255,0.04);
+table.matrix td {
+  padding: 7px 6px;
+  border-bottom: 1px dotted var(--cream-3);
   vertical-align: middle;
+  /* A long unbroken surname must wrap, not widen the column past the screen. */
+  overflow-wrap: break-word;
 }
-table.predictions tbody tr:hover td:not(.cat-col):not(.actual-col) { background: rgba(255,255,255,0.025); }
-table.predictions tbody tr:last-child td { border-bottom: none; }
 
-table.predictions th.cat-col, table.predictions td.cat-col {
+table.matrix tbody tr:last-child td { border-bottom: none; }
+table.matrix tbody tr:hover td:not(.cat) { background: rgba(18, 59, 43, 0.05); }
+
+/* A hidden column must actually leave the layout, including table cells. */
+table.matrix [hidden] { display: none !important; }
+
+/* Row labels stay put while the people scroll past. */
+table.matrix .cat {
   position: sticky;
   left: 0;
   z-index: 2;
-  background: var(--panel-2);
-  border-right: 1px solid var(--line);
-  width: 170px;
-  min-width: 170px;
-  font-weight: 600;
-}
-table.predictions thead th.cat-col {
-  z-index: 4;
-  background: #16161e;
-}
-
-table.predictions th.actual-col, table.predictions td.actual-col {
-  position: sticky;
-  left: 170px;
-  z-index: 2;
-  background-color: var(--panel-2);
-  background-image: linear-gradient(rgba(212, 175, 55, 0.10), rgba(212, 175, 55, 0.10));
-  border-left: 2px solid var(--gold);
-  border-right: 2px solid var(--gold);
-  width: 170px;
-  min-width: 170px;
-}
-table.predictions thead th.actual-col {
-  z-index: 4;
-  background-color: #16161e;
-  background-image: linear-gradient(rgba(212, 175, 55, 0.22), rgba(212, 175, 55, 0.22));
-  color: var(--gold);
-  text-shadow: 0 0 12px rgba(212, 175, 55, 0.4);
-}
-table.predictions tbody tr:hover td.actual-col {
-  background-image: linear-gradient(rgba(212, 175, 55, 0.16), rgba(212, 175, 55, 0.16));
-}
-table.predictions tbody tr.award td.actual-col .player { color: var(--gold-soft); }
-
-table.predictions tr.section-break td {
-  background: var(--panel-2);
-  color: var(--muted);
-  font-size: 10px;
+  width: var(--catw);
+  min-width: var(--catw);
+  background: var(--cream);
+  font-size: 10.5px;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
-  letter-spacing: 0.18em;
-  padding: 8px 12px;
+  color: var(--muted);
   font-weight: 700;
+  white-space: nowrap;
 }
-table.predictions tr.section-break td.cat-col { background: var(--panel-2); }
+table.matrix tbody tr:hover .cat { background: #efe6d2; }
 
-table.predictions tr.award td.cat-col {
-  border-left: 3px solid var(--gold);
-  color: var(--gold-soft);
+table.matrix .cat.band {
+  /* A band spans every column; pinning it would fight the scroll. */
+  position: static;
+  width: auto;
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  color: var(--forest);
+  background: var(--cream-2);
+  padding: 5px 6px;
 }
+
+table.matrix th.friend .fn {
+  display: block;
+  font-size: 12px;
+  letter-spacing: 0.02em;
+  font-weight: 700;
+  color: var(--ink-2);
+}
+table.matrix th.friend .fp {
+  display: block;
+  margin-top: 2px;
+  font-family: var(--slab);
+  font-size: 11px;
+  line-height: 1.25;
+  white-space: normal;
+  color: var(--muted);
+}
+
+table.matrix th.medal-1 .fn,
+table.matrix th.medal-1 .fp { color: var(--gold); }
+table.matrix th.medal-2 .fn,
+table.matrix th.medal-2 .fp { color: #8d8d8d; }
+table.matrix th.medal-3 .fn,
+table.matrix th.medal-3 .fp { color: #9a6b45; }
+
+/* The Actual column is always there. The tab hides it when you want more names. */
+table.matrix.hide-actual th.actcol,
+table.matrix.hide-actual td.actcol { display: none; }
+
+table.matrix th.actcol {
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--forest);
+}
+
+table.matrix td.actcol {
+  background: var(--cream-4);
+  border-left: 2px solid var(--forest);
+  border-right: 2px solid var(--forest);
+}
+
+/* 7. Club pills ------------------------------------------------------------ */
 
 .pill {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 4px 9px 4px 5px;
-  border-radius: 6px;
-  font-weight: 700;
-  font-size: 11px;
-  letter-spacing: 0.08em;
-  line-height: 1;
+  gap: 4px;
+  padding: 2px 6px 2px 3px;
+  font-size: 11.5px;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  line-height: 1.35;
   white-space: nowrap;
-  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.08);
 }
-.pill.sm { font-size: 10px; padding: 3px 7px 3px 4px; }
 .pill .crest {
-  width: 18px;
-  height: 18px;
+  width: 16px;
+  height: 16px;
   object-fit: contain;
-  background: rgba(255,255,255,0.92);
-  border-radius: 3px;
-  padding: 1px;
+  background: rgba(255, 255, 255, 0.92);
   flex-shrink: 0;
 }
+.pill.sm { font-size: 10.5px; padding: 1px 5px 1px 2px; }
 .pill.sm .crest { width: 14px; height: 14px; }
 
-.relegation-stack {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  align-items: flex-start;
-}
-
-/* Green tick for correct picks (CSS-drawn checkmark, no emoji/font dependency) */
-.pill.hit-pill {
-  outline: 1.5px solid var(--accent);
-  outline-offset: -1.5px;
-}
-.pill.hit-pill::after {
+/* A correct pick: a forest inset ring, drawn without a font or emoji. */
+.pill.hit { box-shadow: inset 0 0 0 1.75px var(--forest); }
+.pill.hit::after {
   content: "";
   display: inline-block;
   width: 4px;
-  height: 8px;
-  border: solid var(--accent);
-  border-width: 0 2px 2px 0;
+  height: 7px;
+  border: solid var(--forest);
+  border-width: 0 1.75px 1.75px 0;
   transform: rotate(45deg);
-  margin-left: 4px;
-  margin-bottom: 2px;
-  vertical-align: middle;
-  background: rgba(0, 0, 0, 0);
-}
-.player.hit-player::after {
-  content: "";
-  display: inline-block;
-  width: 5px;
-  height: 9px;
-  border: solid var(--accent);
-  border-width: 0 2px 2px 0;
-  transform: rotate(45deg);
-  margin-left: 6px;
-  margin-bottom: 2px;
-  vertical-align: middle;
+  margin-left: 3px;
+  margin-bottom: 1px;
 }
 
-/* Brand colors — full PL roster across seasons covered */
+.player { font-weight: 600; font-size: 12.5px; }
+.player.hit { color: var(--forest); }
+.player.hit::after {
+  content: "";
+  display: inline-block;
+  width: 4px;
+  height: 7px;
+  border: solid var(--forest);
+  border-width: 0 1.75px 1.75px 0;
+  transform: rotate(45deg);
+  margin-left: 4px;
+  margin-bottom: 1px;
+}
+.player .qualifier {
+  display: block;
+  color: var(--muted);
+  font-style: italic;
+  font-weight: 400;
+  font-size: 10.5px;
+}
+
+.none { color: var(--muted); font-style: italic; font-size: 11.5px; }
+
+.relegation-stack { display: flex; flex-direction: column; gap: 2px; align-items: flex-start; }
+
+/* Brand colours — full PL roster across seasons covered */
 .t-ARS { background:#EF0107; color:#fff; }
 .t-CHE { background:#034694; color:#fff; }
 .t-LIV { background:#C8102E; color:#fff; }
 .t-MCI { background:#6CABDD; color:#1C2C5B; }
 .t-MUN { background:#DA291C; color:#FBE122; }
 .t-TOT { background:#132257; color:#fff; }
-.t-NEW { background:#241F20; color:#fff; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.18); }
+.t-NEW { background:#241F20; color:#fff; }
 .t-AVL { background:#670E36; color:#95BFE5; }
 .t-BOU { background:#B50E12; color:#000; }
 .t-CRY { background:#1B458F; color:#C4122E; }
@@ -274,7 +445,7 @@ table.predictions tr.award td.cat-col {
 .t-BHA { background:#0057B8; color:#fff; }
 .t-BRE { background:#E30613; color:#fff; }
 .t-EVE { background:#003399; color:#fff; }
-.t-FUL { background:#000000; color:#fff; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.18); }
+.t-FUL { background:#000000; color:#fff; }
 .t-LEI { background:#003090; color:#FDBE11; }
 .t-WAT { background:#FBEE23; color:#111111; }
 .t-NOR { background:#FFF200; color:#00A651; }
@@ -285,345 +456,266 @@ table.predictions tr.award td.cat-col {
 .t-COV { background:#78D0F3; color:#1D2F5F; }
 .t-HUL { background:#F5971D; color:#000; }
 
-.nopick { color: var(--muted); font-style: italic; font-size: 12px; }
-.player { font-weight: 600; }
-.player .qualifier {
-  display: block;
-  color: var(--muted);
-  font-style: italic;
-  font-weight: 400;
-  font-size: 10px;
-  margin-top: 2px;
-}
+/* 8. Hot takes ------------------------------------------------------------- */
 
-/* Commentary */
-section.commentary {
-  max-width: 1700px;
-  margin: 32px auto 0;
-}
-section.commentary h2 {
-  margin: 0 0 16px;
-  font-size: 18px;
-  letter-spacing: 0.1em;
+.toggle { display: inline-flex; border: 1px solid var(--forest); margin: 0 0 14px; }
+.toggle button {
+  padding: 7px 16px;
+  background: none;
+  border: none;
+  font-family: inherit;
+  font-size: 10.5px;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--gold-soft);
+  font-weight: 700;
+  color: var(--ink-2);
+  cursor: pointer;
 }
-.cards {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-  gap: 14px;
-}
-.card {
-  background: var(--panel);
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  padding: 16px 18px;
-  transition: border-color 120ms;
-}
-.card:hover { border-color: var(--gold); }
-.card h3 {
-  margin: 0 0 10px;
-  font-size: 14px;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--gold-soft);
-}
-.card .quote {
-  margin: 8px 0 0;
-  padding: 10px 12px;
-  background: var(--panel-2);
-  border-left: 3px solid;
-  border-radius: 0 8px 8px 0;
-  font-size: 13px;
-  line-height: 1.5;
-  color: rgba(244,244,247,0.92);
-}
-.card .quote.disappointment { border-left-color: #ff5466; }
-.card .quote.surprise { border-left-color: var(--accent); }
-.card .quote.hottake { border-left-color: var(--gold); }
-.card .quote .label {
-  display: block;
-  font-size: 10px;
-  text-transform: uppercase;
-  letter-spacing: 0.16em;
-  color: var(--muted);
-  margin-bottom: 4px;
-}
+.toggle button[aria-selected="true"] { background: var(--forest); color: var(--cream); }
 
-/* Leaderboard */
-section.leaderboard {
-  max-width: 1700px;
-  margin: 32px auto 0;
+.takes { column-width: 300px; column-gap: 26px; column-rule: 1px dotted var(--cream-3); }
+
+.take {
+  break-inside: avoid;
+  padding: 0 0 12px;
+  margin: 0 0 12px;
+  border-bottom: 1px dotted var(--cream-3);
 }
-section.leaderboard .lb-head {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 16px;
-  margin: 0 0 14px;
-  flex-wrap: wrap;
-}
-section.leaderboard h2 {
-  margin: 0;
-  font-size: 18px;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--gold-soft);
-}
-.lb-status {
-  margin: 0;
-  color: var(--muted);
-  font-size: 12px;
-  letter-spacing: 0.04em;
-}
-.lb-status strong { color: var(--gold-soft); font-weight: 600; }
-.lb-status a { color: var(--gold-soft); }
-.lb-table {
-  width: 100%;
-  background: var(--panel);
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  overflow: hidden;
-  border-collapse: separate;
-  border-spacing: 0;
-}
-.lb-table th {
-  background: linear-gradient(180deg, #1f1f2c, #14141c);
-  text-align: left;
-  padding: 12px 18px;
-  font-size: 11px;
-  text-transform: uppercase;
+.take .who {
+  display: block;
+  margin: 0 0 3px;
+  font-size: 10.5px;
   letter-spacing: 0.12em;
-  color: var(--muted);
-  border-bottom: 1px solid var(--line);
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--gold);
 }
-.lb-table td {
-  padding: 12px 18px;
-  border-bottom: 1px solid rgba(255,255,255,0.04);
+.take p {
+  margin: 0;
+  padding-left: 10px;
+  border-left: 2px solid var(--cream-3);
+  font-size: 13.5px;
+  line-height: 1.55;
 }
-.lb-table tr:last-child td { border-bottom: none; }
-.lb-table tr:hover td { background: rgba(255,255,255,0.025); }
-.lb-table .rank { font-weight: 700; width: 80px; font-variant-numeric: tabular-nums; color: var(--muted); }
-.lb-table .name { font-weight: 600; }
-.lb-table .score { font-weight: 700; text-align: right; width: 110px; color: var(--accent); font-variant-numeric: tabular-nums; }
-.lb-table tr.podium-1 .rank { color: #ffd700; font-size: 14px; }
-.lb-table tr.podium-2 .rank { color: #c0c0c0; }
-.lb-table tr.podium-3 .rank { color: #cd7f32; }
-.lb-table tr.podium-1 .name { color: var(--gold); }
-.lb-table tr.podium-2 .name { color: #c0c0c0; }
-.lb-table tr.podium-3 .name { color: #cd7f32; }
+.takes-dis .take p { border-left-color: var(--danger); }
+.takes-sur .take p { border-left-color: var(--forest-2); }
+.takes-hot .take p { border-left-color: var(--gold); }
 
-.lb-table tr.lb-row { cursor: pointer; transition: background 100ms; }
-.lb-table tr.lb-row .name::after {
-  content: " [+]";
-  color: var(--muted);
-  font-weight: 600;
-  font-size: 10px;
-  margin-left: 6px;
-  display: inline-block;
-}
-.lb-table tr.lb-row.expanded .name::after {
-  content: " [−]";
-  color: var(--accent);
-}
-.lb-table tr.lb-breakdown td {
-  background: #0e0e16;
-  padding: 18px 22px;
-  border-bottom: 1px solid var(--line);
-}
-.bd-panel {
+/* 9. Home tiles ----------------------------------------------------------- */
+
+.tiles {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 16px 28px;
+  grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+  gap: 12px;
 }
-.bd-section h4 {
-  margin: 0 0 8px;
-  font-size: 10px;
+
+.tile {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  border: 1px solid var(--forest);
+  background: rgba(255, 255, 255, 0.34);
+  padding: 16px;
+  color: inherit;
+}
+.tile:hover { border-color: var(--gold); background: rgba(255, 255, 255, 0.62); }
+
+.tile .yr {
+  font-family: var(--slab);
+  font-size: 29px;
+  line-height: 1;
+  color: var(--forest);
+  font-variant-numeric: lining-nums tabular-nums;
+}
+
+.tile .clubs { display: flex; gap: 5px; flex-wrap: wrap; }
+.tile .clubs .pill { font-size: 11.5px; padding: 2px 7px 2px 3px; }
+.tile .clubs .pill .crest { width: 17px; height: 17px; }
+
+.tile .people {
+  display: grid;
+  gap: 3px;
+  border-top: 1px dotted var(--cream-3);
+  padding-top: 10px;
+}
+
+.tile .pp { display: flex; align-items: baseline; gap: 8px; font-size: 13px; }
+.tile .pp .medal { width: 12px; height: 15px; flex-shrink: 0; fill: currentColor; align-self: center; }
+.tile .pp .pos { font-family: var(--slab); width: 13px; font-size: 12px; color: var(--muted); }
+.tile .pp .who { font-family: var(--slab); font-size: 16px; color: var(--ink); }
+.tile .pp .pt {
+  margin-left: auto;
+  font-family: var(--slab);
+  font-size: 13px;
+  color: var(--muted);
+  font-variant-numeric: lining-nums tabular-nums;
+}
+.tile .pp.m1, .tile .pp.m1 .who, .tile .pp.m1 .pos { color: var(--gold); }
+.tile .pp.m2, .tile .pp.m2 .who, .tile .pp.m2 .pos { color: #8d8d8d; }
+.tile .pp.m3, .tile .pp.m3 .who, .tile .pp.m3 .pos { color: #9a6b45; }
+
+.tile .state {
+  font-size: 11px;
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: var(--gold-soft);
-  font-weight: 700;
-}
-.bd-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
-  padding: 5px 0;
-  font-size: 12px;
-  border-bottom: 1px solid rgba(255,255,255,0.04);
-}
-.bd-row:last-child { border-bottom: none; }
-.bd-row .bd-label { color: rgba(244,244,247,0.78); }
-.bd-row .bd-label strong { color: var(--text); font-weight: 600; }
-.bd-row .bd-pts {
-  font-variant-numeric: tabular-nums;
   font-weight: 700;
   color: var(--muted);
-  white-space: nowrap;
-  min-width: 36px;
-  text-align: right;
 }
-.bd-row.hit .bd-pts { color: var(--accent); }
-.bd-row.partial .bd-pts { color: var(--gold-soft); }
-.bd-total {
-  grid-column: 1 / -1;
-  margin-top: 8px;
-  padding-top: 12px;
-  border-top: 1px solid var(--line);
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  font-weight: 700;
-  color: var(--accent);
-}
-.bd-total .bd-total-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.14em; color: var(--gold-soft); }
-.bd-total .bd-total-pts { font-size: 18px; font-variant-numeric: tabular-nums; }
 
-/* Shown on a season page while everyone else's picks are still locked */
+/* 10. Rubric --------------------------------------------------------------- */
+
+.rubric { margin: 0 0 26px; }
+
+.rubric h2,
+.sec-heading {
+  margin: 0 0 8px;
+  padding-bottom: 5px;
+  border-bottom: 1px solid var(--forest);
+  font-family: var(--slab);
+  font-weight: 400;
+  font-size: 19px;
+  color: var(--forest);
+  text-transform: uppercase;
+}
+
+table.rubric-table { border-collapse: collapse; width: 100%; font-size: 14px; }
+
+table.rubric-table th {
+  text-align: left;
+  padding: 8px 8px;
+  font-size: 9.5px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-weight: 700;
+  border-bottom: 1px solid var(--forest);
+}
+
+table.rubric-table td {
+  padding: 10px 8px;
+  border-bottom: 1px dotted var(--cream-3);
+  vertical-align: baseline;
+}
+table.rubric-table td.cat { font-weight: 500; color: var(--ink); }
+table.rubric-table td.pts {
+  width: 118px;
+  font-family: var(--slab);
+  font-size: 17px;
+  color: var(--forest);
+  white-space: nowrap;
+  font-variant-numeric: lining-nums tabular-nums;
+}
+table.rubric-table td.note { color: var(--ink-2); font-size: 13px; }
+table.rubric-table tr:last-child td { border-bottom: none; }
+table.rubric-table tr.total td { border-top: 1px solid var(--forest); border-bottom: none; font-weight: 600; }
+table.rubric-table tr.total td.pts { color: var(--gold); }
+
+/* 11. Reveal notice -------------------------------------------------------- */
+
 .reveal-notice {
-  max-width: 1700px;
-  margin: 0 auto 16px;
-  padding: 14px 18px;
-  background: var(--panel);
-  border: 1px solid var(--line);
+  margin: 0 0 20px;
+  padding: 12px 14px;
+  background: var(--cream-2);
   border-left: 3px solid var(--gold);
-  border-radius: 0 12px 12px 0;
-  color: rgba(244, 244, 247, 0.82);
+  color: var(--ink-2);
   font-size: 13px;
   line-height: 1.55;
 }
-.reveal-notice strong { color: var(--gold-soft); font-weight: 600; }
+.reveal-notice strong { color: var(--ink); font-weight: 600; }
 
-/* Homepage season grid */
-section.season-grid {
-  max-width: 1100px;
-  margin: 0 auto;
-}
-section.season-grid h2 {
-  margin: 0 0 16px;
-  font-size: 18px;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--gold-soft);
-}
-.seasons {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 14px;
-}
-.season-card {
-  display: block;
-  background: var(--panel);
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  padding: 18px 20px;
-  text-decoration: none;
-  color: inherit;
-  transition: border-color 120ms, transform 120ms;
-}
-.season-card:hover {
-  border-color: var(--gold);
-  transform: translateY(-2px);
-}
-.season-card .yr {
-  display: block;
-  font-size: 26px;
-  font-weight: 800;
-  letter-spacing: -0.01em;
-  color: var(--text);
-}
-.season-card .meta {
-  display: block;
-  margin-top: 6px;
-  color: var(--muted);
-  font-size: 12px;
-  letter-spacing: 0.06em;
-}
-.season-card .winner {
+.back {
   display: inline-block;
-  margin-top: 12px;
-  padding: 4px 10px;
-  background: rgba(212, 175, 55, 0.12);
-  border: 1px solid rgba(212, 175, 55, 0.4);
-  color: var(--gold-soft);
-  border-radius: 999px;
-  font-size: 11px;
-  letter-spacing: 0.04em;
-  font-weight: 600;
-}
-
-/* Rubric panel (homepage + scoring) */
-section.rubric-panel {
-  max-width: 1100px;
-  margin: 32px auto 0;
-  background: var(--panel);
-  border: 1px solid var(--line);
-  border-radius: 14px;
-  padding: 22px 26px;
-}
-section.rubric-panel h2 {
-  margin: 0 0 16px;
-  font-size: 14px;
-  letter-spacing: 0.14em;
+  margin-top: 26px;
+  font-size: 10px;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: var(--gold-soft);
-}
-table.rubric {
-  width: 100%;
-  border-collapse: separate;
-  border-spacing: 0;
-  font-size: 14px;
-}
-table.rubric th, table.rubric td {
-  text-align: left;
-  padding: 11px 14px;
-  border-bottom: 1px solid rgba(255,255,255,0.05);
-}
-table.rubric th {
   color: var(--muted);
-  font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  font-weight: 600;
 }
-table.rubric td.cat { font-weight: 600; }
-table.rubric td.pts {
-  color: var(--accent);
-  font-weight: 700;
-  white-space: nowrap;
-  font-variant-numeric: tabular-nums;
+
+/* 12. Narrow screens ------------------------------------------------------- */
+
+@media (max-width: 860px) {
+  .shell { grid-template-columns: 1fr; }
+
+  /* The rail turns into a bar that scrolls sideways rather than stacking. */
+  .rail {
+    /* Stays reachable on a long matrix: the bar parks at the top of the page. */
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    height: auto;
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
+    overflow-x: auto;
+    border-right: none;
+    border-bottom: 1px solid var(--forest);
+    scrollbar-width: none;
+  }
+  .rail::-webkit-scrollbar { display: none; }
+  .rail .brand {
+    border-bottom: none;
+    padding-bottom: 0;
+    font-size: 15px;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .rail nav { flex-direction: row; flex-shrink: 0; }
+  .rail nav a {
+    border-left: none;
+    border-bottom: 2px solid transparent;
+    white-space: nowrap;
+    padding: 7px 8px;
+    font-size: 11px;
+  }
+  .rail nav a[aria-current="page"] { border-left: none; border-bottom-color: var(--gold); background: none; }
+  .rail nav .group { padding: 6px 7px; white-space: nowrap; }
+  .rail nav a.sub { padding: 7px 7px; font-size: 10.5px; border-left: none; }
+  .rail nav a.sub + a.top { margin-top: 0; }
+  .rail .submit { margin-top: 0; white-space: nowrap; flex-shrink: 0; font-size: 11px; padding: 8px 10px; }
+
+  main { padding: 16px 13px 56px; }
+
+  .masthead { gap: 8px; margin-bottom: 16px; }
+
+  .tiles { grid-template-columns: 1fr; }
+
+  .takes { column-width: auto; }
+
+  /* One pinned column only, and a phone-sized matrix scale. Bigger than this
+     pushes the first name column off the screen. */
+  :root { --catw: 84px; }
+  table.matrix .cat { font-size: 9.5px; letter-spacing: 0.04em; }
+  table.matrix .cat.band { font-size: 8.5px; }
+  table.matrix th.friend .fn { font-size: 11px; }
+  table.matrix th.friend .fp { font-size: 10px; }
+  table.matrix td, table.matrix th { padding-left: 4px; padding-right: 4px; }
+  table.matrix .pill { font-size: 10.5px; padding: 1px 5px 1px 2px; gap: 3px; }
+  table.matrix .pill .crest { width: 14px; height: 14px; }
+  table.matrix .pill.sm { font-size: 9.5px; }
+  table.matrix .pill.sm .crest { width: 12px; height: 12px; }
+  table.matrix .player { font-size: 11.5px; }
+  table.matrix .none { font-size: 10.5px; }
+  table.matrix.hide-actual td.actcol,
+  table.matrix.hide-actual th.actcol { display: none; }
+
+  table.rubric-table { font-size: 13px; }
+  table.rubric-table td.pts { width: 78px; font-size: 15px; }
+  table.rubric-table td.note { font-size: 12px; }
 }
-table.rubric td.note { color: rgba(244,244,247,0.75); }
-table.rubric tr:last-child td { border-bottom: none; }
-table.rubric tr.total td {
-  border-top: 1px solid var(--line);
-  padding-top: 14px;
-  font-weight: 700;
-  color: var(--gold-soft);
+
+@media (max-width: 860px) {
+  #matrix, #hot-takes { scroll-margin-top: 68px; }
 }
-table.rubric tr.total td.pts { color: var(--accent); }
 
-@media (max-width: 720px) {
-  body { padding: 16px 8px 32px; }
-  header.title-block { padding: 18px 18px; gap: 16px; }
-  header.title-block .pl-logo { height: 48px; padding: 8px 12px; }
-  header h1 { font-size: 22px; }
+@media (max-width: 480px) {
+  .masthead h1 { font-size: 23px; }
+  .tile .pp .who { font-size: 15px; }
+  .toggle button { padding: 7px 11px; letter-spacing: 0.08em; }
+  .chipx { font-size: 11px; padding: 4px 8px; }
+}
 
-  table.predictions { font-size: 11px; }
-  table.predictions thead th { padding: 8px 6px; font-size: 10px; letter-spacing: 0.06em; }
-  table.predictions tbody td { padding: 6px 6px; }
-  table.predictions th.friend { min-width: 78px; }
-  table.predictions th.cat-col, table.predictions td.cat-col { width: 92px; min-width: 92px; }
-  table.predictions th.actual-col, table.predictions td.actual-col { left: 92px; width: 92px; min-width: 92px; }
-
-  table.predictions .pill { font-size: 9px; padding: 3px 6px 3px 4px; gap: 4px; letter-spacing: 0.05em; }
-  table.predictions .pill .crest { width: 13px; height: 13px; }
-  table.predictions .pill.sm { font-size: 8px; padding: 2px 5px 2px 3px; }
-  table.predictions .pill.sm .crest { width: 11px; height: 11px; }
-
-  table.predictions .player { font-size: 11px; }
-  table.predictions .player .qualifier { font-size: 9px; }
-
-  .reveal-notice { padding: 12px 14px; font-size: 12px; }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition: none !important; animation: none !important; }
 }

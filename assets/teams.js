@@ -40,8 +40,18 @@
     { code: 'WOL', name: 'Wolves',   espnId: 380, promoted: false },
   ];
 
+  // Clubs that only appear in older seasons. Without these the historic pages
+  // render a bare code instead of a crest, because teamPill cannot find them.
+  // Ids are copied from the crest URLs those pages already carried.
+  const HISTORIC = [
+    { code: 'LEI', name: 'Leicester City',    espnId: 375, promoted: false },
+    { code: 'LUT', name: 'Luton Town',        espnId: 398, promoted: false },
+    { code: 'SHU', name: 'Sheffield United',  espnId: 392, promoted: false },
+    { code: 'SOU', name: 'Southampton',       espnId: 376, promoted: false },
+  ];
+
   const TEAMS_BY_CODE = {};
-  PL_TEAMS.concat(DEPARTED).forEach((t) => {
+  PL_TEAMS.concat(DEPARTED, HISTORIC).forEach((t) => {
     TEAMS_BY_CODE[t.code] = t;
   });
 
@@ -74,6 +84,7 @@
 
   window.PL_TEAMS = PL_TEAMS;
   window.PL_DEPARTED = DEPARTED;
+  window.PL_HISTORIC = HISTORIC;
   window.TEAMS_BY_CODE = TEAMS_BY_CODE;
   window.teamPill = teamPill;
   window.crestImg = crestImg;
