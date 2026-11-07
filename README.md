@@ -2,7 +2,7 @@
 
 Annual group-chat prediction game. Each season's submissions become a self-contained HTML infographic, scored against actual results.
 
-Live: https://mazines.github.io/projects/premier-league-predictions/ · Submit: [`predict.html`](predict.html) · Rubric: [`scoring.html`](scoring.html)
+Live: https://mazines.github.io/premier-league-predictions/ · Submit: [`predict.html`](predict.html) · Rubric: [`scoring.html`](scoring.html)
 
 Static site — no build step. Pushes to `main` auto-deploy via GitHub Pages.
 

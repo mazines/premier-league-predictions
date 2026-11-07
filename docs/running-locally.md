@@ -6,7 +6,7 @@ so start there.
 ## Serve the site
 
 ```sh
-cd ~/Documents/GitHub/premier-league-predictons/premier-league-predictons
+cd ~/Documents/GitHub/Personal/premier-league-predictions
 python3 -m http.server 8000
 ```
 
